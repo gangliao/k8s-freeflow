@@ -24,64 +24,74 @@ SOFTWARE.
 #include <atomic>
 #include <chrono>
 
-#define MAX_QP_RATE_LIMIT 5000000000 // in bytes
-#define BURST_PER_QP 4000000   // in bytes
+#define MAX_QP_RATE_LIMIT 5000000000  // in bytes
+#define BURST_PER_QP 4000000          // in bytes
 
-class TokenBucket {
-public:
-  TokenBucket() : time_(0), timePerToken_(0), timePerBurst_(0) {}
+class TokenBucket
+{
+   public:
+    TokenBucket() : time_(0), timePerToken_(0), timePerBurst_(0) {}
 
-  TokenBucket(const uint64_t rate, const uint64_t burstSize) {
-    time_ = 0;
-    timePerToken_ = 5000000000 / rate;
-    timePerBurst_ = burstSize * timePerToken_;
-  }
-
-  TokenBucket(const TokenBucket &other) {
-    timePerToken_ = other.timePerToken_.load();
-    timePerBurst_ = other.timePerBurst_.load();
-  }
-
-  TokenBucket &operator=(const TokenBucket &other) {
-    timePerToken_ = other.timePerToken_.load();
-    timePerBurst_ = other.timePerBurst_.load();
-    return *this;
-  }
-
-  bool consume(const uint64_t tokens) {
-    const uint64_t now =
-        std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::steady_clock::now().time_since_epoch())
-            .count() * 5000;
-    const uint64_t timeNeeded =
-        tokens * timePerToken_.load(std::memory_order_relaxed);
-    const uint64_t minTime =
-        now - timePerBurst_.load(std::memory_order_relaxed);
-    uint64_t oldTime = time_.load(std::memory_order_relaxed);
-    uint64_t newTime = oldTime;
-
-    if (minTime > oldTime) {
-      newTime = minTime;
+    TokenBucket(const uint64_t rate, const uint64_t burstSize)
+    {
+        time_         = 0;
+        timePerToken_ = 5000000000 / rate;
+        timePerBurst_ = burstSize * timePerToken_;
     }
 
-    for (;;) {
-      newTime += timeNeeded;
-      if (newTime > now) {
+    TokenBucket(const TokenBucket &other)
+    {
+        timePerToken_ = other.timePerToken_.load();
+        timePerBurst_ = other.timePerBurst_.load();
+    }
+
+    TokenBucket &operator=(const TokenBucket &other)
+    {
+        timePerToken_ = other.timePerToken_.load();
+        timePerBurst_ = other.timePerBurst_.load();
+        return *this;
+    }
+
+    bool consume(const uint64_t tokens)
+    {
+        const uint64_t now =
+            std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::steady_clock::now().time_since_epoch())
+                .count() *
+            5000;
+        const uint64_t timeNeeded =
+            tokens * timePerToken_.load(std::memory_order_relaxed);
+        const uint64_t minTime =
+            now - timePerBurst_.load(std::memory_order_relaxed);
+        uint64_t oldTime = time_.load(std::memory_order_relaxed);
+        uint64_t newTime = oldTime;
+
+        if (minTime > oldTime)
+        {
+            newTime = minTime;
+        }
+
+        for (;;)
+        {
+            newTime += timeNeeded;
+            if (newTime > now)
+            {
+                return false;
+            }
+            if (time_.compare_exchange_weak(oldTime, newTime,
+                                            std::memory_order_relaxed,
+                                            std::memory_order_relaxed))
+            {
+                return true;
+            }
+            newTime = oldTime;
+        }
+
         return false;
-      }
-      if (time_.compare_exchange_weak(oldTime, newTime,
-                                      std::memory_order_relaxed,
-                                      std::memory_order_relaxed)) {
-        return true;
-      }
-      newTime = oldTime;
     }
 
-    return false;
-  }
-
-private:
-  std::atomic<uint64_t> time_;
-  std::atomic<uint64_t> timePerToken_;
-  std::atomic<uint64_t> timePerBurst_;
+   private:
+    std::atomic<uint64_t> time_;
+    std::atomic<uint64_t> timePerToken_;
+    std::atomic<uint64_t> timePerBurst_;
 };

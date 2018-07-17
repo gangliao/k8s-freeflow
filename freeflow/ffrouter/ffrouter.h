@@ -5,91 +5,81 @@
 #define FFROUTER_H
 
 #include "constant.h"
-#include "shared_memory.h"
-#include "rdma_api.h"
-#include "types.h"
-#include "log.h"
 #include "kern-abi.h"
+#include "log.h"
+#include "rdma_api.h"
+#include "shared_memory.h"
 #include "tokenbucket.h"
+#include "types.h"
 
-#include <string>
+#include <algorithm>
 #include <iostream>
 #include <map>
-#include <vector>
 #include <sstream>
-#include <algorithm>
+#include <string>
+#include <vector>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <netinet/in.h>
-#include <malloc.h>
-#include <errno.h>
-#include <byteswap.h>
 #include <arpa/inet.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/ipc.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <sys/un.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+#include <byteswap.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <malloc.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <pthread.h>
+#include <rdma/rdma_cma.h>
+#include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
 #include <string.h>
+#include <sys/ipc.h>
+#include <sys/mman.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/un.h>
 #include <time.h>
-#include <rdma/rdma_cma.h>
-#include <netdb.h>
-#include <netinet/tcp.h>
+#include <unistd.h>
 
 #define UDP_PORT 11232
 #define HOST_NUM 2
 
-#if defined(SCM_CREDS)          /* BSD interface */
-#define CREDSTRUCT      cmsgcred
-#define SCM_CREDTYPE    SCM_CREDS
-#elif defined(SCM_CREDENTIALS)  /* Linux interface */
-#define CREDSTRUCT      ucred
-#define SCM_CREDTYPE    SCM_CREDENTIALS
+#if defined(SCM_CREDS) /* BSD interface */
+#define CREDSTRUCT cmsgcred
+#define SCM_CREDTYPE SCM_CREDS
+#elif defined(SCM_CREDENTIALS) /* Linux interface */
+#define CREDSTRUCT ucred
+#define SCM_CREDTYPE SCM_CREDENTIALS
 #else
 #error passing credentials is unsupported!
 #endif
 
-
 /* size of control buffer to send/recv one file descriptor */
-#define RIGHTSLEN   CMSG_LEN(sizeof(int))
-#define CREDSLEN    CMSG_LEN(sizeof(struct CREDSTRUCT))
-#define CONTROLLEN  (RIGHTSLEN + CREDSLEN)
+#define RIGHTSLEN CMSG_LEN(sizeof(int))
+#define CREDSLEN CMSG_LEN(sizeof(struct CREDSTRUCT))
+#define CONTROLLEN (RIGHTSLEN + CREDSLEN)
 
-void mem_flush(const void *p, int allocation_size);
-const char HOST_LIST[HOST_NUM][16] = {
-    "192.168.2.13",
-    "192.168.2.15"
-};
+void mem_flush(const void* p, int allocation_size);
+const char HOST_LIST[HOST_NUM][16] = {"192.168.2.13", "192.168.2.15"};
 
-struct MR_SHM {
+struct MR_SHM
+{
     char* mr_ptr;
     char* shm_ptr;
 };
 
-struct HandlerArgs {
-    struct FreeFlowRouter *ffr;
+struct HandlerArgs
+{
+    struct FreeFlowRouter* ffr;
     int client_sock;
     int count;
 };
 
-class FreeFlowRouter {
-public:
+class FreeFlowRouter
+{
+   public:
     int sock;
     std::string name;
     std::string pathname;
@@ -118,8 +108,8 @@ public:
     std::map<uintptr_t, uintptr_t> uid_map;
 
     // clientid --> shared memmory piece vector
-    std::map<int, std::vector<ShmPiece*> > shm_pool;
-    std::map<std::string, ShmPiece* > shm_map;
+    std::map<int, std::vector<ShmPiece*>> shm_pool;
+    std::map<std::string, ShmPiece*> shm_map;
     pthread_mutex_t shm_mutex;
 
     // lkey --> ptr of shm piece buffer
@@ -137,7 +127,7 @@ public:
     uint32_t host_ip;
 
     FreeFlowRouter(const char* name);
-    ~FreeFlowRouter();    
+    ~FreeFlowRouter();
     void start();
     void start_udp_server();
     void map_vip(void* addr);
@@ -153,41 +143,60 @@ public:
     std::map<std::string, std::string> vip_map;
 };
 
-void HandleRequest(struct HandlerArgs *args);
-void CtrlChannelLoop(struct HandlerArgs *args);
+void HandleRequest(struct HandlerArgs* args);
+void CtrlChannelLoop(struct HandlerArgs* args);
 void UDPServer();
 
-void *get_in_addr(struct sockaddr *sa);
+void* get_in_addr(struct sockaddr* sa);
 int send_fd(int sock, int fd);
 int recv_fd(int sock);
 
 #if !defined(RDMA_CMA_H_FREEFLOW)
-int rdma_bind_addr2(struct rdma_cm_id *id, struct sockaddr *addr, socklen_t addrlen);
-int rdma_resolve_addr2(struct rdma_cm_id *id, struct sockaddr *src_addr,
-                               socklen_t src_len, struct sockaddr *dst_addr,
-                               socklen_t dst_len, int timeout_ms);
-int rdma_create_id_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_bind_addr_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_bind_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int ucma_query_route_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_listen_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_resolve_addr_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_resolve_addr2_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int ucma_query_addr_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int ucma_query_gid_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int ucma_process_conn_resp_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int ucma_destroy_kern_id_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_resolve_route_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int ucma_query_path_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_connect_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_accept_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_set_option_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out, void *optval);
-int rdma_migrate_id_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_disconnect_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_init_qp_attr_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
-int rdma_get_cm_event_resp(struct rdma_event_channel *channel, void* cmd_in, void* resp_out);
+int rdma_bind_addr2(struct rdma_cm_id* id, struct sockaddr* addr,
+                    socklen_t addrlen);
+int rdma_resolve_addr2(struct rdma_cm_id* id, struct sockaddr* src_addr,
+                       socklen_t src_len, struct sockaddr* dst_addr,
+                       socklen_t dst_len, int timeout_ms);
+int rdma_create_id_resp(struct rdma_event_channel* channel, void* cmd_in,
+                        void* resp_out);
+int rdma_bind_addr_resp(struct rdma_event_channel* channel, void* cmd_in,
+                        void* resp_out);
+int rdma_bind_resp(struct rdma_event_channel* channel, void* cmd_in,
+                   void* resp_out);
+int ucma_query_route_resp(struct rdma_event_channel* channel, void* cmd_in,
+                          void* resp_out);
+int rdma_listen_resp(struct rdma_event_channel* channel, void* cmd_in,
+                     void* resp_out);
+int rdma_resolve_addr_resp(struct rdma_event_channel* channel, void* cmd_in,
+                           void* resp_out);
+int rdma_resolve_addr2_resp(struct rdma_event_channel* channel, void* cmd_in,
+                            void* resp_out);
+int ucma_query_addr_resp(struct rdma_event_channel* channel, void* cmd_in,
+                         void* resp_out);
+int ucma_query_gid_resp(struct rdma_event_channel* channel, void* cmd_in,
+                        void* resp_out);
+int ucma_process_conn_resp_resp(struct rdma_event_channel* channel,
+                                void* cmd_in, void* resp_out);
+int ucma_destroy_kern_id_resp(struct rdma_event_channel* channel, void* cmd_in,
+                              void* resp_out);
+int rdma_resolve_route_resp(struct rdma_event_channel* channel, void* cmd_in,
+                            void* resp_out);
+int ucma_query_path_resp(struct rdma_event_channel* channel, void* cmd_in,
+                         void* resp_out);
+int rdma_connect_resp(struct rdma_event_channel* channel, void* cmd_in,
+                      void* resp_out);
+int rdma_accept_resp(struct rdma_event_channel* channel, void* cmd_in,
+                     void* resp_out);
+int rdma_set_option_resp(struct rdma_event_channel* channel, void* cmd_in,
+                         void* resp_out, void* optval);
+int rdma_migrate_id_resp(struct rdma_event_channel* channel, void* cmd_in,
+                         void* resp_out);
+int rdma_disconnect_resp(struct rdma_event_channel* channel, void* cmd_in,
+                         void* resp_out);
+int rdma_init_qp_attr_resp(struct rdma_event_channel* channel, void* cmd_in,
+                           void* resp_out);
+int rdma_get_cm_event_resp(struct rdma_event_channel* channel, void* cmd_in,
+                           void* resp_out);
 #endif
 
-
 #endif /* FFROUTER_H */
-
