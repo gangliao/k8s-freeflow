@@ -20,8 +20,7 @@ unsigned long gettime_us()
 void move_qp_to_init(struct ibv_qp *qp)
 {
     struct ibv_qp_attr attr;
-    int flags =
-        IBV_QP_STATE | IBV_QP_PKEY_INDEX | IBV_QP_PORT | IBV_QP_ACCESS_FLAGS;
+    int flags = IBV_QP_STATE | IBV_QP_PKEY_INDEX | IBV_QP_PORT | IBV_QP_ACCESS_FLAGS;
     int ret;
 
     memset(&attr, 0, sizeof(struct ibv_qp_attr));
@@ -66,8 +65,7 @@ void move_qp_to_rtr(struct ibv_qp *qp, struct ib_conn_data *dest)
 
     attr.max_dest_rd_atomic = dest->out_reads;
 
-    flags = IBV_QP_STATE | IBV_QP_AV | IBV_QP_PATH_MTU | IBV_QP_DEST_QPN |
-            IBV_QP_RQ_PSN | IBV_QP_MAX_DEST_RD_ATOMIC | IBV_QP_MIN_RNR_TIMER;
+    flags = IBV_QP_STATE | IBV_QP_AV | IBV_QP_PATH_MTU | IBV_QP_DEST_QPN | IBV_QP_RQ_PSN | IBV_QP_MAX_DEST_RD_ATOMIC | IBV_QP_MIN_RNR_TIMER;
 
     ret = ibv_modify_qp(qp, &attr, flags);
     if (ret != 0)
@@ -92,8 +90,7 @@ void move_qp_to_rts(struct ibv_qp *qp)
     attr.sq_psn        = 0;
     attr.max_rd_atomic = 1;
 
-    flags = IBV_QP_STATE | IBV_QP_TIMEOUT | IBV_QP_RETRY_CNT |
-            IBV_QP_RNR_RETRY | IBV_QP_SQ_PSN | IBV_QP_MAX_QP_RD_ATOMIC;
+    flags = IBV_QP_STATE | IBV_QP_TIMEOUT | IBV_QP_RETRY_CNT | IBV_QP_RNR_RETRY | IBV_QP_SQ_PSN | IBV_QP_MAX_QP_RD_ATOMIC;
 
     ret = ibv_modify_qp(qp, &attr, flags);
     if (ret != 0)
@@ -172,8 +169,7 @@ void poll_completion(struct ib_data *myib)
     {
         poll_result   = ibv_poll_cq(myib->ib_cq, 1, wc);
         cur_time_msec = gettime_ms();
-    } while ((poll_result == 0) &&
-             ((cur_time_msec - start_time_msec) < POLL_TIMEOUT_MS));
+    } while ((poll_result == 0) && ((cur_time_msec - start_time_msec) < POLL_TIMEOUT_MS));
 
     if (poll_result < 0)
     {
@@ -190,10 +186,7 @@ void poll_completion(struct ib_data *myib)
     {
         if (wc[0].status != IBV_WC_SUCCESS)
         {
-            fprintf(
-                stderr,
-                "got bad completion with status: 0x%x, vendor syndrome: 0x%x\n",
-                wc[0].status, wc[0].vendor_err);
+            fprintf(stderr, "got bad completion with status: 0x%x, vendor syndrome: 0x%x\n", wc[0].status, wc[0].vendor_err);
         }
         else
         {
@@ -306,8 +299,7 @@ void setup_ib(struct ib_data *myib)
     }*/
 }
 
-void fill_ib_conn_data(struct ib_data *myib,
-                       struct ib_conn_data *my_ib_conn_data)
+void fill_ib_conn_data(struct ib_data *myib, struct ib_conn_data *my_ib_conn_data)
 {
     my_ib_conn_data->lid       = myib->ib_port_attr.lid;
     my_ib_conn_data->out_reads = 1;
@@ -382,8 +374,7 @@ int sender_make_connection(char *receiver_ip)
     return sockfd;
 }
 
-void exchange_conn_data(int socket, struct ib_conn_data *my,
-                        struct ib_conn_data *remote)
+void exchange_conn_data(int socket, struct ib_conn_data *my, struct ib_conn_data *remote)
 {
     int numWritten = -1;
     int numRead    = -1;
@@ -391,16 +382,14 @@ void exchange_conn_data(int socket, struct ib_conn_data *my,
     numWritten = write(socket, my, sizeof(struct ib_conn_data));
     if (numWritten != sizeof(struct ib_conn_data))
     {
-        fprintf(stderr, "could not write: %d %d %s\n", numWritten, errno,
-                strerror(errno));
+        fprintf(stderr, "could not write: %d %d %s\n", numWritten, errno, strerror(errno));
         // exit(-1);
     }
 
     numRead = read(socket, remote, sizeof(struct ib_conn_data));
     if (numRead != sizeof(struct ib_conn_data))
     {
-        fprintf(stderr, "could not read: %d %d %s\n", numRead, errno,
-                strerror(errno));
+        fprintf(stderr, "could not read: %d %d %s\n", numRead, errno, strerror(errno));
         // exit(-1);
     }
 }
@@ -410,8 +399,7 @@ void wait_for_nudge(int socket)
     char buffer;
     if (read(socket, &buffer, sizeof(buffer)) != sizeof(buffer))
     {
-        fprintf(stderr, "could not get completion message: %d %s\n", errno,
-                strerror(errno));
+        fprintf(stderr, "could not get completion message: %d %s\n", errno, strerror(errno));
         // exit(-1);
     }
 }
@@ -421,8 +409,7 @@ void send_nudge(int socket)
     char buffer;
     if (write(socket, &buffer, sizeof(buffer)) != sizeof(buffer))
     {
-        fprintf(stderr, "could not send completion message: %d %s\n", errno,
-                strerror(errno));
+        fprintf(stderr, "could not send completion message: %d %s\n", errno, strerror(errno));
         // exit(-1);
     }
 }
@@ -449,8 +436,7 @@ struct ibv_recv_wr *create_recv_request(struct ib_data *myib)
     return rr;
 }
 
-struct ibv_send_wr *create_send_request(struct ib_data *myib,
-                                        struct ib_conn_data *dest, int opcode)
+struct ibv_send_wr *create_send_request(struct ib_data *myib, struct ib_conn_data *dest, int opcode)
 {
     struct ibv_send_wr *sr;
     struct ibv_sge sge;

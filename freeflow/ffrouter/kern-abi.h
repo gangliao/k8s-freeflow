@@ -103,9 +103,7 @@ enum
 
 enum
 {
-    IB_USER_VERBS_CMD_CREATE_FLOW =
-        (IB_USER_VERBS_CMD_FLAG_EXTENDED << IB_USER_VERBS_CMD_FLAGS_SHIFT) +
-        IB_USER_VERBS_CMD_THRESHOLD,
+    IB_USER_VERBS_CMD_CREATE_FLOW = (IB_USER_VERBS_CMD_FLAG_EXTENDED << IB_USER_VERBS_CMD_FLAGS_SHIFT) + IB_USER_VERBS_CMD_THRESHOLD,
     IB_USER_VERBS_CMD_DESTROY_FLOW
 };
 
@@ -182,11 +180,9 @@ struct ibv_comp_event
  */
 
 #define IBV_RESP_TO_VERBS_RESP_EX_RAW(ex_ptr, ex_type, ibv_type, field) \
-    ((ibv_type *)((void *)(ex_ptr) + offsetof(ex_type, field) +         \
-                  sizeof((ex_ptr)->field)))
+    ((ibv_type *)((void *)(ex_ptr) + offsetof(ex_type, field) + sizeof((ex_ptr)->field)))
 
-#define IBV_RESP_TO_VERBS_RESP_EX(ex_ptr, ex_type, ibv_type) \
-    IBV_RESP_TO_VERBS_RESP_EX_RAW(ex_ptr, ex_type, ibv_type, comp_mask)
+#define IBV_RESP_TO_VERBS_RESP_EX(ex_ptr, ex_type, ibv_type) IBV_RESP_TO_VERBS_RESP_EX_RAW(ex_ptr, ex_type, ibv_type, comp_mask)
 
 struct ibv_query_params
 {

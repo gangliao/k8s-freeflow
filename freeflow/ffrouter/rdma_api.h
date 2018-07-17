@@ -82,15 +82,13 @@ struct ibv_device *get_first_device();
 
 void setup_ib(struct ib_data *myib);
 
-void fill_ib_conn_data(struct ib_data *myib,
-                       struct ib_conn_data *my_ib_conn_data);
+void fill_ib_conn_data(struct ib_data *myib, struct ib_conn_data *my_ib_conn_data);
 
 int receiver_accept_connection();
 
 int sender_make_connection(char *receiver_ip);
 
-void exchange_conn_data(int socket, struct ib_conn_data *my,
-                        struct ib_conn_data *remote);
+void exchange_conn_data(int socket, struct ib_conn_data *my, struct ib_conn_data *remote);
 
 void wait_for_nudge(int socket);
 
@@ -98,8 +96,7 @@ void send_nudge(int socket);
 
 struct ibv_recv_wr *create_recv_request(struct ib_data *myib);
 
-struct ibv_send_wr *create_send_request(struct ib_data *myib,
-                                        struct ib_conn_data *dest, int opcode);
+struct ibv_send_wr *create_send_request(struct ib_data *myib, struct ib_conn_data *dest, int opcode);
 
 void fill_sge(struct ibv_sge *sge, struct ib_data *myib);
 

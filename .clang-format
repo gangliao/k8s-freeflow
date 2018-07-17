@@ -11,4 +11,5 @@ FixNamespaceComments: true
 AlignEscapedNewlines: true
 AlignAfterOpenBracket: true
 IndentWidth: 4
+ColumnLimit: 150
 ...

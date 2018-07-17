@@ -44,8 +44,7 @@
 #include <valgrind/memcheck.h>
 
 #ifndef VALGRIND_MAKE_MEM_DEFINED
-#warning \
-    "Valgrind support requested, but VALGRIND_MAKE_MEM_DEFINED not available"
+#warning "Valgrind support requested, but VALGRIND_MAKE_MEM_DEFINED not available"
 #endif
 
 #endif /* HAVE_VALGRIND_MEMCHECK_H */
@@ -63,12 +62,10 @@
 
 #ifdef HAVE_SYMVER_SUPPORT
 #define symver(name, api, ver) asm(".symver " #name "," #api "@" #ver)
-#define default_symver(name, api) \
-    asm(".symver " #name "," #api "@@" DEFAULT_ABI)
+#define default_symver(name, api) asm(".symver " #name "," #api "@@" DEFAULT_ABI)
 #else
 #define symver(name, api, ver)
-#define default_symver(name, api) \
-    extern __typeof(name) api __attribute__((alias(#name)))
+#define default_symver(name, api) extern __typeof(name) api __attribute__((alias(#name)))
 #endif /* HAVE_SYMVER_SUPPORT */
 
 #define PFX "libibverbs: "
@@ -140,48 +137,40 @@ HIDDEN struct ibv_qp *ibv_find_xrc_qp(uint32_t qpn);
                 (cmd)->hdr.reserved  = 0;				   \
         } while (0)
 */
-#define IBV_INIT_CMD_RESP_EX_V(cmd, cmd_size, size, opcode, out, resp_size, \
-                               outsize)                                     \
-    do                                                                      \
-    {                                                                       \
-        size_t c_size                 = cmd_size - sizeof(struct ex_hdr);   \
-        (cmd)->hdr.command            = IB_USER_VERBS_CMD_##opcode;         \
-        (cmd)->hdr.in_words           = ((c_size) / 8);                     \
-        (cmd)->hdr.out_words          = ((resp_size) / 8);                  \
-        (cmd)->hdr.provider_in_words  = (((size) - (cmd_size)) / 8);        \
-        (cmd)->hdr.provider_out_words = (((outsize) - (resp_size)) / 8);    \
-        (cmd)->hdr.response           = (uintptr_t)(out);                   \
-        (cmd)->hdr.reserved           = 0;                                  \
+#define IBV_INIT_CMD_RESP_EX_V(cmd, cmd_size, size, opcode, out, resp_size, outsize) \
+    do                                                                               \
+    {                                                                                \
+        size_t c_size                 = cmd_size - sizeof(struct ex_hdr);            \
+        (cmd)->hdr.command            = IB_USER_VERBS_CMD_##opcode;                  \
+        (cmd)->hdr.in_words           = ((c_size) / 8);                              \
+        (cmd)->hdr.out_words          = ((resp_size) / 8);                           \
+        (cmd)->hdr.provider_in_words  = (((size) - (cmd_size)) / 8);                 \
+        (cmd)->hdr.provider_out_words = (((outsize) - (resp_size)) / 8);             \
+        (cmd)->hdr.response           = (uintptr_t)(out);                            \
+        (cmd)->hdr.reserved           = 0;                                           \
     } while (0)
 
 #define IBV_INIT_CMD_RESP_EX_VCMD(cmd, cmd_size, size, opcode, out, outsize) \
-    IBV_INIT_CMD_RESP_EX_V(cmd, cmd_size, size, opcode, out, sizeof(*(out)), \
-                           outsize)
+    IBV_INIT_CMD_RESP_EX_V(cmd, cmd_size, size, opcode, out, sizeof(*(out)), outsize)
 
-#define IBV_INIT_CMD_RESP_EX(cmd, size, opcode, out, outsize)      \
-    IBV_INIT_CMD_RESP_EX_V(cmd, sizeof(*(cmd)), size, opcode, out, \
-                           sizeof(*(out)), outsize)
+#define IBV_INIT_CMD_RESP_EX(cmd, size, opcode, out, outsize) IBV_INIT_CMD_RESP_EX_V(cmd, sizeof(*(cmd)), size, opcode, out, sizeof(*(out)), outsize)
 
-#define IBV_INIT_CMD_EX(cmd, size, opcode) \
-    IBV_INIT_CMD_RESP_EX_V(cmd, sizeof(*(cmd)), size, opcode, NULL, 0, 0)
+#define IBV_INIT_CMD_EX(cmd, size, opcode) IBV_INIT_CMD_RESP_EX_V(cmd, sizeof(*(cmd)), size, opcode, NULL, 0, 0)
 
-#define IBV_INIT_CMD_RESP_EXP(opcode, cmd, cmd_size, drv_size, out, osize, \
-                              drv_osize)                                   \
-    do                                                                     \
-    {                                                                      \
-        size_t c_size = cmd_size - sizeof(struct ex_hdr);                  \
-        (cmd)->hdr.command =                                               \
-            IB_USER_VERBS_EXP_CMD_##opcode + IB_USER_VERBS_EXP_CMD_FIRST;  \
-        (cmd)->hdr.in_words           = (c_size / 8);                      \
-        (cmd)->hdr.out_words          = (osize / 8);                       \
-        (cmd)->hdr.provider_in_words  = (drv_size / 8);                    \
-        (cmd)->hdr.provider_out_words = (drv_osize / 8);                   \
-        (cmd)->hdr.response           = (uintptr_t)(out);                  \
-        (cmd)->hdr.reserved           = 0;                                 \
+#define IBV_INIT_CMD_RESP_EXP(opcode, cmd, cmd_size, drv_size, out, osize, drv_osize)                 \
+    do                                                                                                \
+    {                                                                                                 \
+        size_t c_size                 = cmd_size - sizeof(struct ex_hdr);                             \
+        (cmd)->hdr.command            = IB_USER_VERBS_EXP_CMD_##opcode + IB_USER_VERBS_EXP_CMD_FIRST; \
+        (cmd)->hdr.in_words           = (c_size / 8);                                                 \
+        (cmd)->hdr.out_words          = (osize / 8);                                                  \
+        (cmd)->hdr.provider_in_words  = (drv_size / 8);                                               \
+        (cmd)->hdr.provider_out_words = (drv_osize / 8);                                              \
+        (cmd)->hdr.response           = (uintptr_t)(out);                                             \
+        (cmd)->hdr.reserved           = 0;                                                            \
     } while (0)
 
-#define IBV_INIT_CMD_EXP(opcode, cmd, cmd_size, drv_size) \
-    IBV_INIT_CMD_RESP_EXP(opcode, cmd, cmd_size, drv_size, 0, 0, 0)
+#define IBV_INIT_CMD_EXP(opcode, cmd, cmd_size, drv_size) IBV_INIT_CMD_RESP_EXP(opcode, cmd, cmd_size, drv_size, 0, 0, 0)
 
 #ifndef uninitialized_var
 #define uninitialized_var(x) x = x

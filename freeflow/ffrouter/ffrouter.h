@@ -152,51 +152,29 @@ int send_fd(int sock, int fd);
 int recv_fd(int sock);
 
 #if !defined(RDMA_CMA_H_FREEFLOW)
-int rdma_bind_addr2(struct rdma_cm_id* id, struct sockaddr* addr,
-                    socklen_t addrlen);
-int rdma_resolve_addr2(struct rdma_cm_id* id, struct sockaddr* src_addr,
-                       socklen_t src_len, struct sockaddr* dst_addr,
-                       socklen_t dst_len, int timeout_ms);
-int rdma_create_id_resp(struct rdma_event_channel* channel, void* cmd_in,
-                        void* resp_out);
-int rdma_bind_addr_resp(struct rdma_event_channel* channel, void* cmd_in,
-                        void* resp_out);
-int rdma_bind_resp(struct rdma_event_channel* channel, void* cmd_in,
-                   void* resp_out);
-int ucma_query_route_resp(struct rdma_event_channel* channel, void* cmd_in,
-                          void* resp_out);
-int rdma_listen_resp(struct rdma_event_channel* channel, void* cmd_in,
-                     void* resp_out);
-int rdma_resolve_addr_resp(struct rdma_event_channel* channel, void* cmd_in,
-                           void* resp_out);
-int rdma_resolve_addr2_resp(struct rdma_event_channel* channel, void* cmd_in,
-                            void* resp_out);
-int ucma_query_addr_resp(struct rdma_event_channel* channel, void* cmd_in,
-                         void* resp_out);
-int ucma_query_gid_resp(struct rdma_event_channel* channel, void* cmd_in,
-                        void* resp_out);
-int ucma_process_conn_resp_resp(struct rdma_event_channel* channel,
-                                void* cmd_in, void* resp_out);
-int ucma_destroy_kern_id_resp(struct rdma_event_channel* channel, void* cmd_in,
-                              void* resp_out);
-int rdma_resolve_route_resp(struct rdma_event_channel* channel, void* cmd_in,
-                            void* resp_out);
-int ucma_query_path_resp(struct rdma_event_channel* channel, void* cmd_in,
-                         void* resp_out);
-int rdma_connect_resp(struct rdma_event_channel* channel, void* cmd_in,
-                      void* resp_out);
-int rdma_accept_resp(struct rdma_event_channel* channel, void* cmd_in,
-                     void* resp_out);
-int rdma_set_option_resp(struct rdma_event_channel* channel, void* cmd_in,
-                         void* resp_out, void* optval);
-int rdma_migrate_id_resp(struct rdma_event_channel* channel, void* cmd_in,
-                         void* resp_out);
-int rdma_disconnect_resp(struct rdma_event_channel* channel, void* cmd_in,
-                         void* resp_out);
-int rdma_init_qp_attr_resp(struct rdma_event_channel* channel, void* cmd_in,
-                           void* resp_out);
-int rdma_get_cm_event_resp(struct rdma_event_channel* channel, void* cmd_in,
-                           void* resp_out);
+int rdma_bind_addr2(struct rdma_cm_id* id, struct sockaddr* addr, socklen_t addrlen);
+int rdma_resolve_addr2(struct rdma_cm_id* id, struct sockaddr* src_addr, socklen_t src_len, struct sockaddr* dst_addr, socklen_t dst_len,
+                       int timeout_ms);
+int rdma_create_id_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_bind_addr_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_bind_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int ucma_query_route_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_listen_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_resolve_addr_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_resolve_addr2_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int ucma_query_addr_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int ucma_query_gid_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int ucma_process_conn_resp_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int ucma_destroy_kern_id_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_resolve_route_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int ucma_query_path_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_connect_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_accept_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_set_option_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out, void* optval);
+int rdma_migrate_id_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_disconnect_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_init_qp_attr_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
+int rdma_get_cm_event_resp(struct rdma_event_channel* channel, void* cmd_in, void* resp_out);
 #endif
 
 #endif /* FFROUTER_H */

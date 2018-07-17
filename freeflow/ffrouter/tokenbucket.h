@@ -55,16 +55,11 @@ class TokenBucket
     bool consume(const uint64_t tokens)
     {
         const uint64_t now =
-            std::chrono::duration_cast<std::chrono::microseconds>(
-                std::chrono::steady_clock::now().time_since_epoch())
-                .count() *
-            5000;
-        const uint64_t timeNeeded =
-            tokens * timePerToken_.load(std::memory_order_relaxed);
-        const uint64_t minTime =
-            now - timePerBurst_.load(std::memory_order_relaxed);
-        uint64_t oldTime = time_.load(std::memory_order_relaxed);
-        uint64_t newTime = oldTime;
+            std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count() * 5000;
+        const uint64_t timeNeeded = tokens * timePerToken_.load(std::memory_order_relaxed);
+        const uint64_t minTime    = now - timePerBurst_.load(std::memory_order_relaxed);
+        uint64_t oldTime          = time_.load(std::memory_order_relaxed);
+        uint64_t newTime          = oldTime;
 
         if (minTime > oldTime)
         {
@@ -78,9 +73,7 @@ class TokenBucket
             {
                 return false;
             }
-            if (time_.compare_exchange_weak(oldTime, newTime,
-                                            std::memory_order_relaxed,
-                                            std::memory_order_relaxed))
+            if (time_.compare_exchange_weak(oldTime, newTime, std::memory_order_relaxed, std::memory_order_relaxed))
             {
                 return true;
             }

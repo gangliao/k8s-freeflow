@@ -23,8 +23,7 @@ bool ShmPiece::open()
     ftruncate(shm_fd, this->size);
 
     /* now map the shared memory segment in the address space of the process */
-    this->ptr = mmap(0, this->size, PROT_READ | PROT_WRITE,
-                     MAP_SHARED | MAP_LOCKED, this->shm_fd, 0);
+    this->ptr = mmap(0, this->size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, this->shm_fd, 0);
 
     if (this->ptr == MAP_FAILED)
     {
@@ -39,7 +38,6 @@ void ShmPiece::remove()
 {
     if (this->ptr != MAP_FAILED)
     {
-        if (shm_unlink(this->name.c_str()) == -1)
-            LOG_ERROR("Error removing " << this->name);
+        if (shm_unlink(this->name.c_str()) == -1) LOG_ERROR("Error removing " << this->name);
     }
 }
