@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "__locale": "c",
+        "ios": "c"
     }
 }

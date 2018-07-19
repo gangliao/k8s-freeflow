@@ -3,12 +3,11 @@ MAINTAINER Gang Liao <gangliao@cs.umd.edu>
 
 RUN yum update -y && \
     yum install -y wget git pkg-config curl sed grep vim infiniband-diags perftest make \
-    locales clang-format libtool bsdmainutils libevent-dev net-tools gcc-c++ && \
+    locales clang-format libtool bsdmainutils libevent-dev net-tools gcc-c++ libnl3-devel && \
     yum clean all
 
 # librdmacm-devel librdmacm-utils librdmacm-dev libibverbs-dev ibverbs-utils
 # libibverbs-dev libmlx4-dev libmlx5-dev
-
 # Set the locale
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en

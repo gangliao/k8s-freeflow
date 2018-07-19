@@ -5,7 +5,7 @@ lib_LTLIBRARIES = src/librdmacm.la
 rslib_LTLIBRARIES = src/librspreload.la
 
 ACLOCAL_AMFLAGS = -I config
-AM_CFLAGS = -g -Wall -D_GNU_SOURCE -DSYSCONFDIR=\"$(sysconfdir)\" -DRDMADIR=\"@rdmadir@\"
+AM_CFLAGS = -g -Wall -Wno-unused-variable -D_GNU_SOURCE -DSYSCONFDIR=\"$(sysconfdir)\" -DRDMADIR=\"@rdmadir@\"
 
 src_librdmacm_la_CFLAGS = $(AM_CFLAGS)
 src_librspreload_la_CFLAGS = $(AM_CFLAGS)
@@ -30,32 +30,35 @@ bin_PROGRAMS = examples/ucmatose examples/rping examples/udaddy examples/mckey \
 	       examples/rdma_client examples/rdma_server examples/rdma_xclient \
 	       examples/rdma_xserver examples/rstream examples/rcopy \
 	       examples/riostream examples/udpong examples/cmtime
+		 
+examples_deps = /usr/lib/libibverbs.so -lmempool -lpthread -lrt
+
 examples_ucmatose_SOURCES = examples/cmatose.c examples/common.c
-examples_ucmatose_LDADD = $(top_builddir)/src/librdmacm.la
+examples_ucmatose_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_rping_SOURCES = examples/rping.c
-examples_rping_LDADD = $(top_builddir)/src/librdmacm.la
+examples_rping_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_udaddy_SOURCES = examples/udaddy.c examples/common.c
-examples_udaddy_LDADD = $(top_builddir)/src/librdmacm.la
+examples_udaddy_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_mckey_SOURCES = examples/mckey.c
-examples_mckey_LDADD = $(top_builddir)/src/librdmacm.la
+examples_mckey_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_rdma_client_SOURCES = examples/rdma_client.c
-examples_rdma_client_LDADD = $(top_builddir)/src/librdmacm.la
+examples_rdma_client_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_rdma_server_SOURCES = examples/rdma_server.c
-examples_rdma_server_LDADD = $(top_builddir)/src/librdmacm.la
+examples_rdma_server_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_rdma_xclient_SOURCES = examples/rdma_xclient.c
-examples_rdma_xclient_LDADD = $(top_builddir)/src/librdmacm.la
+examples_rdma_xclient_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_rdma_xserver_SOURCES = examples/rdma_xserver.c
-examples_rdma_xserver_LDADD = $(top_builddir)/src/librdmacm.la
+examples_rdma_xserver_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_rstream_SOURCES = examples/rstream.c examples/common.c
-examples_rstream_LDADD = $(top_builddir)/src/librdmacm.la
+examples_rstream_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_riostream_SOURCES = examples/riostream.c examples/common.c
-examples_riostream_LDADD = $(top_builddir)/src/librdmacm.la
+examples_riostream_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_rcopy_SOURCES = examples/rcopy.c
-examples_rcopy_LDADD = $(top_builddir)/src/librdmacm.la
+examples_rcopy_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_udpong_SOURCES = examples/udpong.c examples/common.c
-examples_udpong_LDADD = $(top_builddir)/src/librdmacm.la
+examples_udpong_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 examples_cmtime_SOURCES = examples/cmtime.c examples/common.c
-examples_cmtime_LDADD = $(top_builddir)/src/librdmacm.la
+examples_cmtime_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)
 
 librdmacmincludedir = $(includedir)/rdma
 infinibandincludedir = $(includedir)/infiniband
