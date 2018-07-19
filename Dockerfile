@@ -3,7 +3,7 @@ MAINTAINER Gang Liao <gangliao@cs.umd.edu>
 
 RUN yum update -y && \
     yum install -y wget git pkg-config curl sed grep vim infiniband-diags perftest make \
-    locales clang-format libtool bsdmainutils libevent-dev net-tools && \
+    locales clang-format libtool bsdmainutils libevent-dev net-tools gcc-c++ && \
     yum clean all
 
 # librdmacm-devel librdmacm-utils librdmacm-dev libibverbs-dev ibverbs-utils
