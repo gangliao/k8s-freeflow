@@ -1,4 +1,4 @@
-FROM centos:7
+FROM centos:7.3.1611
 MAINTAINER Gang Liao <gangliao@cs.umd.edu>
 
 RUN yum update -y && \
@@ -9,9 +9,6 @@ RUN yum update -y && \
 # librdmacm-devel librdmacm-utils librdmacm-dev libibverbs-dev ibverbs-utils
 # libibverbs-dev libmlx4-dev libmlx5-dev
 # Set the locale
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-
+ENV localedef -i en_US -f UTF-8 en_US.UTF-8
 # git credential to skip password typing
 RUN git config --global credential.helper store
