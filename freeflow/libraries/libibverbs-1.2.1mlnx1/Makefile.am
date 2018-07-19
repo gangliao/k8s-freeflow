@@ -28,38 +28,40 @@ bin_PROGRAMS = examples/ibv_devices examples/ibv_devinfo \
     examples/ibv_dcini examples/ibv_dctgt examples/ibv_umr examples/ibv_intf \
     examples/ibv_polldcinfo
 
+examples_deps = -lmempool -lrt
+
 examples_ibv_devices_SOURCES = examples/device_list.c
-examples_ibv_devices_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_devices_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_devinfo_SOURCES = examples/devinfo.c
-examples_ibv_devinfo_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_devinfo_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_rc_pingpong_SOURCES = examples/rc_pingpong.c examples/pingpong.c
-examples_ibv_rc_pingpong_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_rc_pingpong_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_uc_pingpong_SOURCES = examples/uc_pingpong.c examples/pingpong.c
-examples_ibv_uc_pingpong_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_uc_pingpong_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_ud_pingpong_SOURCES = examples/ud_pingpong.c examples/pingpong.c
-examples_ibv_ud_pingpong_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_ud_pingpong_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_srq_pingpong_SOURCES = examples/srq_pingpong.c examples/pingpong.c
-examples_ibv_srq_pingpong_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_srq_pingpong_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_shared_mr_SOURCES = examples/shared_mr.c
-examples_ibv_shared_mr_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_shared_mr_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_asyncwatch_SOURCES = examples/asyncwatch.c
-examples_ibv_asyncwatch_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_asyncwatch_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_xsrq_pingpong_SOURCES = examples/xsrq_pingpong.c examples/pingpong.c
-examples_ibv_xsrq_pingpong_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_xsrq_pingpong_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_cc_pingpong_SOURCES = examples/cc_pingpong.c
-examples_ibv_cc_pingpong_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_cc_pingpong_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_task_pingpong_SOURCES = examples/task_pingpong.c
-examples_ibv_task_pingpong_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_task_pingpong_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_dcini_SOURCES = examples/dcini.c
-examples_ibv_dcini_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_dcini_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_dctgt_SOURCES = examples/dctgt.c examples/pingpong.c examples/dc.h
-examples_ibv_dctgt_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_dctgt_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_umr_SOURCES = examples/umr_rc.c examples/pingpong.c
-examples_ibv_umr_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_umr_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_intf_SOURCES = examples/intf.c examples/get_clock.c examples/get_clock.h
-examples_ibv_intf_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_intf_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 examples_ibv_polldcinfo_SOURCES = examples/polldcinfo.c
-examples_ibv_polldcinfo_LDADD = $(top_builddir)/src/libibverbs.la
+examples_ibv_polldcinfo_LDADD = $(top_builddir)/src/libibverbs.la $(examples_deps)
 
 
 # Enable ibverbs library test

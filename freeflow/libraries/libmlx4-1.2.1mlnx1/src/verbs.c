@@ -737,7 +737,7 @@ static struct ibv_cq *create_cq(struct ibv_context *context,
 
 	if (mlx4_alloc_cq_buf(to_mctx(context), &cq->buf, cqe, mctx->cqe_size))
 	{
-		printf("cq->buf=%x\n", cq->buf);
+		printf("cq->buf=%p\n", (void *)&cq->buf);
 		fflush(stdout);
 		goto err;
 	}
