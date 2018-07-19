@@ -1,4 +1,4 @@
-FROM centos:7.3.1611
+FROM centos:centos7.3.1611
 MAINTAINER Gang Liao <gangliao@cs.umd.edu>
 
 RUN yum update -y && \
