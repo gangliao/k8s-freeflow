@@ -4,6 +4,8 @@ all: libmempool.cpp
 
 install:
 	cp libmempool.so /usr/lib/libmempool.so
+	cp libmempool.h /usr/include/libmempool.h
+	cp MemoryPool.h /usr/include/MemoryPool.h 
 
 clean:
 	rm -f /usr/lib/libmempool.so
