@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(srcdir)/include
 lib_LTLIBRARIES = src/libibverbs.la
 
 ACLOCAL_AMFLAGS = -I config
-AM_CFLAGS = -g -Wall -Werror
+AM_CFLAGS = -g -Wall -Werror -Wno-strict-aliasing
 
 src_libibverbs_la_CFLAGS = $(AM_CFLAGS) -DIBV_CONFIG_DIR=\"$(sysconfdir)/libibverbs.d\" \
 			   $(LIBNL_CFLAGS)

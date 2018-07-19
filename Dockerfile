@@ -1,14 +1,18 @@
-FROM centos:centos7.3.1611
+FROM centos:7.4.1708
+
 MAINTAINER Gang Liao <gangliao@cs.umd.edu>
 
-RUN yum update -y && \
-    yum install -y wget git pkg-config curl sed grep vim infiniband-diags perftest make \
-    locales clang-format libtool bsdmainutils libevent-dev net-tools gcc-c++ libnl3-devel && \
+RUN yum install -y wget git curl sed grep vim make gcc-c++ libnl3-devel libtool && \
     yum clean all
 
-# librdmacm-devel librdmacm-utils librdmacm-dev libibverbs-dev ibverbs-utils
-# libibverbs-dev libmlx4-dev libmlx5-dev
-# Set the locale
-ENV localedef -i en_US -f UTF-8 en_US.UTF-8
+RUN yum install -y pciutils numactl-libs gtk2 atk cairo gcc-gfortran tcsh lsof ethtool tcl tk && \
+    yum clean all
+
+# Install MLNX Driver
+RUN wget http://www.mellanox.com/downloads/ofed/MLNX_OFED-4.2-1.0.0.0/MLNX_OFED_LINUX-4.2-1.0.0.0-rhel7.4-x86_64.tgz
+RUN gunzip < MLNX_OFED_LINUX-4.2-1.0.0.0-rhel7.4-x86_64.tgz | tar xvf -
+RUN cd  MLNX_OFED_LINUX-4.2-1.0.0.0-rhel7.4-x86_64
+RUN yes | ./mlnxofedinstall
+
 # git credential to skip password typing
 RUN git config --global credential.helper store
