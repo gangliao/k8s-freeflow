@@ -1,4 +1,4 @@
-AM_CFLAGS = -g -Wall -Werror -D_GNU_SOURCE
+AM_CFLAGS = -g -Wall -Werror -Wno-maybe-uninitialized -Wno-unused-label -Wno-unused-variable -Wno-unused-function -D_GNU_SOURCE
 
 mlx4_version_script = @MLX4_VERSION_SCRIPT@
 
