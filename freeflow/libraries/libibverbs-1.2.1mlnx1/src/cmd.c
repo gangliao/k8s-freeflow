@@ -2188,7 +2188,6 @@ static int cmd_destroy_flow(uint32_t handle, int cmd_fd)
 	//}
 
 	struct ibv_destroy_flow cmd;
-	int ret = 0;
 
 	memset(&cmd, 0, sizeof(cmd));
 	IBV_INIT_CMD_EX(&cmd, sizeof(cmd), DESTROY_FLOW);
