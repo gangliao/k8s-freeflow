@@ -1289,7 +1289,7 @@ int ibv_cmd_modify_qp(struct ibv_qp *qp, struct ibv_qp_attr *attr,
 
     	if (PRINT_LOG)
     	{
-    		printf("QP in req: %d, and QP in rsp: %d. size of attr = %d\n", qp->handle, rsp.handle, sizeof(struct ibv_qp_attr));
+			printf("QP in req: %u, and QP in rsp: %u. size of attr = %zu\n", qp->handle, rsp.handle, sizeof(struct ibv_qp_attr));
     		fflush(stdout);
     	}
 
@@ -1414,7 +1414,7 @@ int ibv_cmd_post_send(struct ibv_qp *ibqp, struct ibv_send_wr *wr,
 	{
 		struct IBV_POST_SEND_REQ req_body;
                 req_body.wr_size = header->body_size;
-		req_body.wr = cmd;
+		req_body.wr = (char*)cmd;
 		int rsp_size;
 		request_router(IBV_POST_SEND, &req_body, rsp, &rsp_size);
 	}
@@ -1548,7 +1548,7 @@ int ibv_cmd_post_recv(struct ibv_qp *ibqp, struct ibv_recv_wr *wr,
 	{
 		struct IBV_POST_RECV_REQ req_body;
                 req_body.wr_size = header->body_size;
-		req_body.wr = cmd;
+		req_body.wr = (char*)cmd;
 		int rsp_size;
 		request_router(IBV_POST_RECV, &req_body, rsp, &rsp_size);
 	}
@@ -1676,7 +1676,7 @@ int ibv_cmd_post_srq_recv(struct ibv_srq *srq, struct ibv_recv_wr *wr,
 	{
 		struct IBV_POST_SRQ_RECV_REQ req_body;
                 req_body.wr_size = header->body_size;
-		req_body.wr = cmd;
+		req_body.wr = (char*)cmd;
 		int rsp_size;
 		request_router(IBV_POST_SRQ_RECV, &req_body, rsp, &rsp_size);
 	}
