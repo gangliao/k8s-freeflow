@@ -94,7 +94,7 @@ MLNX_OFED_LINUX-4.2-1.0.0.0
 ## Build FreeFlow Client Image
 
 ```bash
-host$ docker rm -f $(docker ps -a | awk '$2=="gangliao/rdma_dev:centos7.4.1708" {print $1}')
+host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:centos7.4.1708" {print $1}')
 
 host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
     -v `pwd`:/k8s_freeflow -v /sys/class/:/sys/class/ -v /dev/:/dev/ \
@@ -112,6 +112,7 @@ host$ docker tag gangliao/rdma_dev:centos7.4.1708 gangliao/freeflow-client:cento
 ## Build FreeFlow Router Image
 
 ```bash
+host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:centos7.4.1708" {print $1}')
 host$ docker rm -f $(docker ps -a | awk '$2=="gangliao/rdma_dev:centos7.4.1708" {print $1}')
 
 host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
