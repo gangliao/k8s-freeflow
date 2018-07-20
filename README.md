@@ -76,6 +76,15 @@ host$ docker tag rdma_dev:centos7.4.1708 gangliao/rdma_dev:centos7.4.1708
 # host$ docker push
 ```
 
+**Note:** `install_driver.sh` will install MLNX_OFED_LINUX driver, please make sure the
+version of download package is same to the driver of host.
+
+```bash
+host$ ofed_info | grep MLNX_OFED_LINUX | awk -F '/' '{print $2}' | uniq
+
+MLNX_OFED_LINUX-4.2-1.0.0.0
+```
+
 ## Build FreeFlow Client Image
 
 ```bash
@@ -92,15 +101,6 @@ docker-root$ ./k8s_freeflow/build-client.sh
 
 host$ docker tag gangliao/rdma_dev:centos7.4.1708 gangliao/freeflow-client:centos7.4.1708
 # host$ docker push
-```
-
-**Note:** `build-client.sh` first installed MLNX_OFED_LINUX driver, please make sure the
-version of download package is same to the driver of host.
-
-```bash
-host$ ofed_info | grep MLNX_OFED_LINUX | awk -F '/' '{print $2}' | uniq
-
-MLNX_OFED_LINUX-4.2-1.0.0.0
 ```
 
 ## Build FreeFlow Router Image
