@@ -78,7 +78,8 @@ host$ docker exec -it gang_rdma_dev bash
 docker-root$ export http_proxy=http://10.130.14.129:8080
 docker-root$ /k8s_freeflow/install_driver.sh
 
-host$ docker tag rdma_dev:centos7.4.1708 gangliao/rdma_dev:centos7.4.1708
+host$ container_id=$(docker ps -a | awk '$2=="rdma_dev:centos7.4.1708" {print $1}')
+host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "install MLNX_OFED_LINUX" $container_id gangliao/rdma_dev:centos7.4.1708
 # host$ docker push
 ```
 
@@ -94,7 +95,7 @@ MLNX_OFED_LINUX-4.2-1.0.0.0
 ## Build FreeFlow Client Image
 
 ```bash
-host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:centos7.4.1708" {print $1}')
+host$ docker rm -f $(docker ps -a | awk '$2=="gangliao/rdma_dev:centos7.4.1708" {print $1}')
 
 host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
     -v `pwd`:/k8s_freeflow -v /sys/class/:/sys/class/ -v /dev/:/dev/ \
@@ -105,7 +106,8 @@ host$ docker exec -it gang_rdma_dev bash
 
 docker-root$ /k8s_freeflow/build_client.sh
 
-host$ docker tag gangliao/rdma_dev:centos7.4.1708 gangliao/freeflow-client:centos7.4.1708
+host$ container_id=$(docker ps -a | awk '$2=="gangliao/rdma_dev:centos7.4.1708" {print $1}')
+host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-client" $container_id gangliao/freeflow-client:centos7.4.1708
 # host$ docker push
 ```
 
@@ -124,7 +126,8 @@ host$ docker exec -it gang_rdma_dev bash
 
 docker-root$ /k8s_freeflow/build_router.sh
 
-host$ docker tag gangliao/rdma_dev:centos7.4.1708 gangliao/freeflow-router:centos7.4.1708
+host$ container_id=$(docker ps -a | awk '$2=="gangliao/rdma_dev:centos7.4.1708" {print $1}')
+host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-router" $container_id gangliao/freeflow-router:centos7.4.1708
 # host$ docker push
 ```
 
