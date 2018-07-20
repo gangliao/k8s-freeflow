@@ -31,7 +31,7 @@ bin_PROGRAMS = examples/ucmatose examples/rping examples/udaddy examples/mckey \
 	       examples/rdma_xserver examples/rstream examples/rcopy \
 	       examples/riostream examples/udpong examples/cmtime
 		 
-examples_deps = /usr/lib/libibverbs.so -lmempool -lpthread -lrt
+examples_deps = -L/usr/lib -libverbs -lmempool -lpthread -lrt
 
 examples_ucmatose_SOURCES = examples/cmatose.c examples/common.c
 examples_ucmatose_LDADD = $(top_builddir)/src/librdmacm.la $(examples_deps)

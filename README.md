@@ -95,6 +95,7 @@ MLNX_OFED_LINUX-4.2-1.0.0.0
 ## Build FreeFlow Client Image
 
 ```bash
+host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:centos7.4.1708" {print $1}')
 host$ docker rm -f $(docker ps -a | awk '$2=="gangliao/rdma_dev:centos7.4.1708" {print $1}')
 
 host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
