@@ -102,7 +102,7 @@ host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
 
 host$ docker exec -it gang_rdma_dev bash
 
-docker-root$ ./k8s_freeflow/build-client.sh
+docker-root$ ./k8s_freeflow/build_client.sh
 
 host$ docker tag gangliao/rdma_dev:centos7.4.1708 gangliao/freeflow-client:centos7.4.1708
 # host$ docker push
@@ -120,7 +120,7 @@ host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
 
 host$ docker exec -it gang_rdma_dev bash
 
-docker-root$ ./k8s_freeflow/build-router.sh
+docker-root$ ./k8s_freeflow/build_router.sh
 
 host$ docker tag gangliao/rdma_dev:centos7.4.1708 gangliao/freeflow-router:centos7.4.1708
 # host$ docker push
