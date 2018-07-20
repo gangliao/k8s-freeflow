@@ -20,6 +20,10 @@ To simplify the compile process, here we use the same CentOS version inside the 
 You can check it on the host machine:
 
 ```bash
+host$ cat /etc/centos-release
+
+CentOS Linux release 7.4.1708 (Core)
+
 host$ uname -a
 
 Linux nmyjs_186_118 3.10.0-693.el7.x86_64 #1 SMP Tue Aug 22 21:09:27 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
