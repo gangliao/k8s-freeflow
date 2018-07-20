@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xe
 
-cd freeflow
+cd k8s_freeflow/freeflow
 
 cd libraries-router/librdmacm-1.1.0mlnx/
 ./autogen.sh

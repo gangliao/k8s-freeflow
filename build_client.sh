@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xe
 
-cd freeflow
+cd k8s_freeflow/freeflow
 
 # Install Memory Pool
 cd libmempool && make && make install && cd ..
