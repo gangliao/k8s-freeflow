@@ -75,6 +75,7 @@ host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
 
 host$ docker exec -it gang_rdma_dev bash
 
+docker-root$ export http_proxy=http://10.130.14.129:8080
 docker-root$ /k8s_freeflow/install_driver.sh
 
 host$ docker tag rdma_dev:centos7.4.1708 gangliao/rdma_dev:centos7.4.1708
