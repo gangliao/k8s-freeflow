@@ -19,7 +19,7 @@ host$ docker build --build-arg http_proxy=$http_proxy \
 # docker build -t rdma_dev:latest -f ./Dockerfile .
 ```
 
-## Preparation
+## Install MLNX_OFED_LINUX into Dev Image 
 
 To simplify the compile process, here we use the same CentOS version inside the image.
 You can check it on the host machine:
