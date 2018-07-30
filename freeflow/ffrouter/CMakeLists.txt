@@ -8,11 +8,14 @@ set(FFROUTER_BINARY_DIR   ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/bazel.cmake/cmake)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+find_package(curl)
+
 include(bazel)
 include(jsoncpp)
+include(curl)
 
-cc_binary(router
-          SRCS main.cpp ffrouter.cpp rdma_api.cpp verbs_cmd.cpp shared_memory.cpp
-          DEPS rdmacm ibverbs)
+
+cc_binary(router SRCS main.cpp ffrouter.cpp rdma_api.cpp verbs_cmd.cpp shared_memory.cpp)
+target_link_libraries(router -L/usr/lib rdmacm ibverbs)
 
 cc_test(etcd_test SRCS etcd_test.cpp DEPS jsoncpp glog curl)

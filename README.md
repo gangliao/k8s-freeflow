@@ -29,6 +29,11 @@ RUN yum install -y libxml2-python pciutils numactl-libs gtk2 atk cairo \
     gcc-gfortran tcsh lsof ethtool tcl tk && \
     yum clean all
 
+RUN wget https://cmake.org/files/v3.6/cmake-3.6.2.tar.gz
+RUN tar xvf cmake-3.6.2.tar.gz && cd cmake-3.6.2/
+RUN ./bootstrap && make -j8 && make install && ln -s /usr/local/bin/cmake /usr/bin/
+RUN cd .. && rm -rf cmake-3.6.2 cmake-3.6.2.tar.gz 
+
 # git credential to skip password typing
 RUN git config --global credential.helper store
 EOF
