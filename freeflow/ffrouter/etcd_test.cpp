@@ -3,30 +3,28 @@
 #include <gtest/gtest.h>
 #include <json/json.h>
 
-using namespace std;
-using namespace Json;
-
 size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
-    Value root;
-    Value node;
-    Reader reader;
-    FastWriter writer;
-    string json = (char *)buffer;
+    Json::Value root;
+    Json::Value node;
+    Json::Reader reader;
+    Json::FastWriter writer;
+    std::string json = (char *)buffer;
 
     if (!reader.parse(json, root))
     {
-        cout << "parse json error" << endl;
+        std::cout << "parse json error" << std::endl;
         return 0;
     }
-    string nodeString = writer.write(root["node"]);
+    std::string nodeString = writer.write(root["node"]);
     if (!reader.parse(nodeString, node))
     {
-        cout << "parse json error" << endl;
+        std::cout << "parse json error" << std::endl;
         return 0;
     }
 
-    cout << node["value"] << endl;
+    std::string value = writer.write(node["value"]);
+    strncpy((char *)user_p, value.c_str(), value.length());
 
     return size * nmemb;
 }
@@ -76,6 +74,8 @@ TEST(ETCD, GetValue)
     {
         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
     }
+
+    std::cout << buff_p << std::endl;
 
     curl_easy_cleanup(easy_handle);
     curl_global_cleanup();
