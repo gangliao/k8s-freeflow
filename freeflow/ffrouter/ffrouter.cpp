@@ -38,7 +38,7 @@ size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
     }
 
     std::string value = std::string(node["value"]);
-    strncpy(user_p, (void *)value.c_str(), value.length());
+    strncpy((void *)user_p, (void *)value.c_str(), value.length());
 
     return size * nmemb;
 }
