@@ -23,8 +23,7 @@ size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
         return 0;
     }
 
-    std::string value = writer.write(node["value"]);
-    strncpy((char *)user_p, value.c_str(), value.length());
+    *(std::string*)user_p = writer.write(node["value"]); 
 
     return size * nmemb;
 }
@@ -44,7 +43,7 @@ TEST(ETCD, GetValue)
     CURL *easy_handle = curl_easy_init();
     CHECK_NOTNULL(easy_handle);
 
-    char *buff_p = NULL;
+    std::string buff_p;
 
     curl_easy_setopt(easy_handle, CURLOPT_URL, "https://10.142.104.73/v2/keys/Microsoft");
     curl_easy_setopt(easy_handle, CURLOPT_PORT, 2379);
@@ -66,7 +65,7 @@ TEST(ETCD, GetValue)
     curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
 
     curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data);
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, buff_p);
+    curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &buff_p);
 
     CURLcode res = curl_easy_perform(easy_handle);
     /* Check for errors */
