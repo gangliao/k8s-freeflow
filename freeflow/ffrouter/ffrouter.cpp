@@ -23,7 +23,7 @@ size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
     Json::Value node;
     Json::Reader reader;
     Json::FastWriter writer;
-    string json = (char *)buffer;
+    std::string json = (char *)buffer;
 
     if (!reader.parse(json, root))
     {
