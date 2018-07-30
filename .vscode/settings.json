@@ -27,6 +27,10 @@
         "istream": "cpp",
         "locale": "cpp",
         "memory": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "__tree": "cpp",
+        "bitset": "cpp",
+        "set": "cpp",
+        "iterator": "cpp"
     }
 }

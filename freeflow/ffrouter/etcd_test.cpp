@@ -31,8 +31,13 @@ size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
     return 0;
 }
 
-TEST(ETCD, GetKeyValue)
+TEST(ETCD, GetValue)
 {
+    static const char *pCertFile   = "/etc/etcd/ssl/etcd.pem";
+    static const char *pCACertFile = "/etc/kubernetes/ssl/ca.pem";
+    static const char *pKeyName    = "/etc/etcd/ssl/etcd-key.pem";
+    static const char *pKeyType    = "PEM";
+
     CURLcode return_code;
     return_code = curl_global_init(CURL_GLOBAL_SSL);
 
@@ -43,12 +48,34 @@ TEST(ETCD, GetKeyValue)
 
     char *buff_p = NULL;
 
-    curl_easy_setopt(easy_handle, CURLOPT_URL, "http://127.0.0.1/v2/keys/message1?wait=true");
+    curl_easy_setopt(easy_handle, CURLOPT_URL, "https://10.142.104.73/v2/keys/Microsoft");
     curl_easy_setopt(easy_handle, CURLOPT_PORT, 2379);
+
+    /* since PEM is default, we needn't set it for PEM */
+    curl_easy_setopt(easy_handle, CURLOPT_SSLCERTTYPE, "PEM");
+
+    /* set the cert for client authentication */
+    curl_easy_setopt(easy_handle, CURLOPT_SSLCERT, pCertFile);
+
+    /* set the private key (file or ID in engine) */
+    curl_easy_setopt(easy_handle, CURLOPT_SSLKEYTYPE, pKeyType);
+    curl_easy_setopt(easy_handle, CURLOPT_SSLKEY, pKeyName);
+
+    /* set the file with the certs vaildating the server */
+    curl_easy_setopt(easy_handle, CURLOPT_CAINFO, pCACertFile);
+
+    /* disconnect if we can't validate server's cert */
+    curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
+
     curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data);
     curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, buff_p);
 
-    curl_easy_perform(easy_handle);
+    CURLcode res = curl_easy_perform(easy_handle);
+    /* Check for errors */
+    if (res != CURLE_OK)
+    {
+        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    }
 
     curl_easy_cleanup(easy_handle);
     curl_global_cleanup();
