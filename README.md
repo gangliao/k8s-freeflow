@@ -122,8 +122,8 @@ MLNX_OFED_LINUX-4.2-1.0.0.0
 ## Build FreeFlow Client Image
 
 ```bash
-host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:$OS_ID$OS_VERSION" {print $1}')
-host$ docker rm -f $(docker ps -a | awk '$2=="gangliao/rdma_dev:$OS_ID$OS_VERSION" {print $1}')
+host$ docker rm -f $(docker ps -a | grep rdma_dev:$OS_ID$OS_VERSION | awk '{print $1}')
+host$ docker rm -f $(docker ps -a | grep gangliao/rdma_dev:$OS_ID$OS_VERSION | awk '{print $1}')
 
 host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
     -v `pwd`:/k8s_freeflow -v /sys/class/:/sys/class/ -v /dev/:/dev/ \
@@ -134,7 +134,7 @@ host$ docker exec -it gang_rdma_dev bash
 
 docker-root$ /k8s_freeflow/build_client.sh
 
-host$ container_id=$(docker ps -a | awk '$2=="gangliao/rdma_dev:$OS_ID$OS_VERSION" {print $1}')
+host$ container_id=$(docker ps -a | grep gangliao/rdma_dev:$OS_ID$OS_VERSION | awk '{print $1}')
 host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-client" $container_id gangliao/freeflow-client:$OS_ID$OS_VERSION
 # host$ docker push
 ```
@@ -142,8 +142,8 @@ host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-clie
 ## Build FreeFlow Router Image
 
 ```bash
-host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:$OS_ID$OS_VERSION" {print $1}')
-host$ docker rm -f $(docker ps -a | awk '$2=="gangliao/rdma_dev:$OS_ID$OS_VERSION" {print $1}')
+host$ docker rm -f $(docker ps -a | grep rdma_dev:$OS_ID$OS_VERSION | awk '{print $1}')
+host$ docker rm -f $(docker ps -a | grep gangliao/rdma_dev:$OS_ID$OS_VERSION | awk '{print $1}')
 
 host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
     -v `pwd`:/k8s_freeflow -v /sys/class/:/sys/class/ -v /dev/:/dev/ \
@@ -154,7 +154,7 @@ host$ docker exec -it gang_rdma_dev bash
 
 docker-root$ /k8s_freeflow/build_router.sh
 
-host$ container_id=$(docker ps -a | awk '$2=="gangliao/rdma_dev:$OS_ID$OS_VERSION" {print $1}')
+host$ container_id=$(docker ps -a | grep gangliao/rdma_dev:$OS_ID$OS_VERSION | awk '{print $1}')
 host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-router" $container_id gangliao/freeflow-router:$OS_ID$OS_VERSION
 # host$ docker push
 ```
