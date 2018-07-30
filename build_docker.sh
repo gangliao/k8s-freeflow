@@ -7,7 +7,7 @@ OSID=$(lsb_release -i --short  | awk '{print tolower($0)}')
 echo "$OSID:$VERSION"
 
 cat > Dockerfile << EOF
-FROM OSID:$VERSION
+FROM $OSID:$VERSION
 
 MAINTAINER Gang Liao <gangliao@cs.umd.edu>
 
