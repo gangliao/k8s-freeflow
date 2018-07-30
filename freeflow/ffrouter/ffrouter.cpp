@@ -6,10 +6,7 @@
 #include "rdma_api.h"
 #include "verbs_cmd.h"
 
-void update_host_list() 
-{
-    
-}
+void update_host_list() {}
 
 void mem_flush(const void *p, int allocation_size)
 {
