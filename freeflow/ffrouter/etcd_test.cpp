@@ -28,7 +28,7 @@ size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
 
     cout << node["value"] << endl;
 
-    return 0;
+    return size * nmemb;
 }
 
 TEST(ETCD, GetValue)

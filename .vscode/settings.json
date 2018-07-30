@@ -31,6 +31,17 @@
         "__tree": "cpp",
         "bitset": "cpp",
         "set": "cpp",
-        "iterator": "cpp"
+        "iterator": "cpp",
+        "__hash_table": "cpp",
+        "__split_buffer": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "queue": "cpp",
+        "regex": "cpp",
+        "stack": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "vector": "cpp"
     }
 }
