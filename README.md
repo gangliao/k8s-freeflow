@@ -103,7 +103,9 @@ host$ docker exec -it gang_rdma_dev bash
 docker-root$ export http_proxy=http://10.130.14.129:8080
 docker-root$ /k8s_freeflow/install_driver.sh
 
-host$ container_id=$(docker ps -a | awk '$2=="rdma_dev:$OS_ID$OS_VERSION" {print $1}')
+
+# Commit rdma dev
+host$ container_id=$(docker ps | grep rdma_dev:$OS_ID$OS_VERSION | awk '{print $1}')
 host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "install MLNX_OFED_LINUX" $container_id gangliao/rdma_dev:$OS_ID$OS_VERSION
 # host$ docker push
 ```
