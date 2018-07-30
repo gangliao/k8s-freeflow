@@ -19,10 +19,10 @@ static const char *pCurlUrl    = "https://10.142.104.73/v2/keys/";
 
 size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
-    Value root;
-    Value node;
-    Reader reader;
-    FastWriter writer;
+    Json::Value root;
+    Json::Value node;
+    Json::Reader reader;
+    Json::FastWriter writer;
     string json = (char *)buffer;
 
     if (!reader.parse(json, root))
