@@ -11,7 +11,36 @@
 To build docker image `rdma_dev`, please issue the following command:
 
 ```bash
-./build_docker.sh
+OS_VERSION=$(lsb_release -r --short)
+OS_ID=$(lsb_release -i --short  | awk '{print tolower($0)}')
+KERNEL_VERSION=$(uname -r)
+
+echo "$OS_ID:$OS_VERSION"
+
+cat > Dockerfile << EOF
+FROM $OS_ID:$OS_VERSION
+
+MAINTAINER Gang Liao <gangliao@cs.umd.edu>
+
+RUN yum install -y wget git curl sed grep vim make gcc-c++ libnl3-devel libtool && \
+    yum clean all
+
+RUN yum install -y pciutils numactl-libs gtk2 atk cairo gcc-gfortran tcsh lsof ethtool tcl tk && \
+    yum clean all
+
+# git credential to skip password typing
+RUN git config --global credential.helper store
+EOF
+
+export http_proxy=http://10.130.14.129:8080
+docker build --build-arg http_proxy=$http_proxy \
+               --build-arg https_proxy=$http_proxy \
+               --build-arg HTTP_PROXY=$http_proxy \
+               --build-arg HTTPS_PROXY=$http_proxy \
+               -t rdma_dev:$OS_ID$OS_VERSION -f ./Dockerfile .
+
+# or directly no-proxy
+# docker build -t rdma_dev:$OS_ID$OS_VERSION -f ./Dockerfile .
 ```
 
 ## Install MLNX_OFED_LINUX into Dev Image 
@@ -24,9 +53,9 @@ host$ cat /etc/centos-release
 
 CentOS Linux release 7.4.1708 (Core)
 
-host$ uname -a
+host$ uname -r
 
-Linux nmyjs_186_118 3.10.0-693.el7.x86_64 #1 SMP Tue Aug 22 21:09:27 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+3.10.0-693.el7.x86_64
 ```
 
 To install `MLNX_OFED_LINUX` driver in the docker image, you must mount `/lib/modules/3.10.0-693.el7.x86_64/` to complete this process (soft link `/usr/src/kernels/3.10.0-693.el7.x86_64/` also need to mount).
@@ -59,22 +88,22 @@ drwxr-xr-x.  2 root root   4096 Aug 23  2017 weak-updates
 ```
 
 ```bash
-host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:centos7.4.1708" {print $1}')
+host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:$OS_ID$OS_VERSION" {print $1}')
 
 host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
     -v `pwd`:/k8s_freeflow -v /sys/class/:/sys/class/ -v /dev/:/dev/ \
-    -v /lib/modules/3.10.0-693.el7.x86_64/:/lib/modules/3.10.0-693.el7.x86_64/ \
-    -v /usr/src/kernels/3.10.0-693.el7.x86_64/:/usr/src/kernels/3.10.0-693.el7.x86_64/ \
+    -v /lib/modules/$KERNEL_VERSION/:/lib/modules/$KERNEL_VERSION/ \
+    -v /usr/src/kernels/$KERNEL_VERSION/:/usr/src/kernels/$KERNEL_VERSION/ \
     --device=/dev/infiniband/uverbs0 --device=/dev/infiniband/rdma_cm \
-    rdma_dev:centos7.4.1708
+    rdma_dev:$OS_ID$OS_VERSION
 
 host$ docker exec -it gang_rdma_dev bash
 
 docker-root$ export http_proxy=http://10.130.14.129:8080
 docker-root$ /k8s_freeflow/install_driver.sh
 
-host$ container_id=$(docker ps -a | awk '$2=="rdma_dev:centos7.4.1708" {print $1}')
-host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "install MLNX_OFED_LINUX" $container_id gangliao/rdma_dev:centos7.4.1708
+host$ container_id=$(docker ps -a | awk '$2=="rdma_dev:$OS_ID$OS_VERSION" {print $1}')
+host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "install MLNX_OFED_LINUX" $container_id gangliao/rdma_dev:$OS_ID$OS_VERSION
 # host$ docker push
 ```
 
@@ -90,40 +119,40 @@ MLNX_OFED_LINUX-4.2-1.0.0.0
 ## Build FreeFlow Client Image
 
 ```bash
-host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:centos7.4.1708" {print $1}')
-host$ docker rm -f $(docker ps -a | awk '$2=="gangliao/rdma_dev:centos7.4.1708" {print $1}')
+host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:$OS_ID$OS_VERSION" {print $1}')
+host$ docker rm -f $(docker ps -a | awk '$2=="gangliao/rdma_dev:$OS_ID$OS_VERSION" {print $1}')
 
 host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
     -v `pwd`:/k8s_freeflow -v /sys/class/:/sys/class/ -v /dev/:/dev/ \
     --device=/dev/infiniband/uverbs0 --device=/dev/infiniband/rdma_cm \
-    gangliao/rdma_dev:centos7.4.1708
+    gangliao/rdma_dev:$OS_ID$OS_VERSION
 
 host$ docker exec -it gang_rdma_dev bash
 
 docker-root$ /k8s_freeflow/build_client.sh
 
-host$ container_id=$(docker ps -a | awk '$2=="gangliao/rdma_dev:centos7.4.1708" {print $1}')
-host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-client" $container_id gangliao/freeflow-client:centos7.4.1708
+host$ container_id=$(docker ps -a | awk '$2=="gangliao/rdma_dev:$OS_ID$OS_VERSION" {print $1}')
+host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-client" $container_id gangliao/freeflow-client:$OS_ID$OS_VERSION
 # host$ docker push
 ```
 
 ## Build FreeFlow Router Image
 
 ```bash
-host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:centos7.4.1708" {print $1}')
-host$ docker rm -f $(docker ps -a | awk '$2=="gangliao/rdma_dev:centos7.4.1708" {print $1}')
+host$ docker rm -f $(docker ps -a | awk '$2=="rdma_dev:$OS_ID$OS_VERSION" {print $1}')
+host$ docker rm -f $(docker ps -a | awk '$2=="gangliao/rdma_dev:$OS_ID$OS_VERSION" {print $1}')
 
 host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
     -v `pwd`:/k8s_freeflow -v /sys/class/:/sys/class/ -v /dev/:/dev/ \
     --device=/dev/infiniband/uverbs0 --device=/dev/infiniband/rdma_cm \
-    gangliao/rdma_dev:centos7.4.1708
+    gangliao/rdma_dev:$OS_ID$OS_VERSION
 
 host$ docker exec -it gang_rdma_dev bash
 
 docker-root$ /k8s_freeflow/build_router.sh
 
-host$ container_id=$(docker ps -a | awk '$2=="gangliao/rdma_dev:centos7.4.1708" {print $1}')
-host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-router" $container_id gangliao/freeflow-router:centos7.4.1708
+host$ container_id=$(docker ps -a | awk '$2=="gangliao/rdma_dev:$OS_ID$OS_VERSION" {print $1}')
+host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-router" $container_id gangliao/freeflow-router:$OS_ID$OS_VERSION
 # host$ docker push
 ```
 
