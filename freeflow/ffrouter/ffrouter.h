@@ -44,7 +44,7 @@
 #include <unistd.h>
 
 #define UDP_PORT 11232
-#define HOST_NUM 2
+#define HOST_NUM 4096
 
 #if defined(SCM_CREDS) /* BSD interface */
 #define CREDSTRUCT cmsgcred

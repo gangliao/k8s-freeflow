@@ -14,3 +14,5 @@ include(jsoncpp)
 cc_binary(router
           SRCS main.cpp ffrouter.cpp rdma_api.cpp verbs_cmd.cpp shared_memory.cpp
           DEPS rdmacm ibverbs)
+
+cc_test(etcd_test SRCS etcd_test.cpp DEPS jsoncpp glog curl)
