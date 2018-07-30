@@ -20,3 +20,13 @@ RUN yum install -y pciutils numactl-libs gtk2 atk cairo gcc-gfortran tcsh lsof e
 # git credential to skip password typing
 RUN git config --global credential.helper store
 EOF
+
+export http_proxy=http://10.130.14.129:8080
+docker build --build-arg http_proxy=$http_proxy \
+               --build-arg https_proxy=$http_proxy \
+               --build-arg HTTP_PROXY=$http_proxy \
+               --build-arg HTTPS_PROXY=$http_proxy \
+               -t rdma_dev:$OSID$VERSION -f ./Dockerfile .
+
+# or directly no-proxy
+# docker build -t rdma_dev:$OSID$VERSION -f ./Dockerfile .

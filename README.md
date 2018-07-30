@@ -8,15 +8,10 @@
 
 ## Build Dev Image
 
+To build docker image `rdma_dev`, please issue the following command:
+
 ```bash
-host$ export http_proxy=http://10.130.14.129:8080
-host$ docker build --build-arg http_proxy=$http_proxy \
-               --build-arg https_proxy=$http_proxy \
-               --build-arg HTTP_PROXY=$http_proxy \
-               --build-arg HTTPS_PROXY=$http_proxy \
-               -t rdma_dev:centos7.4.1708 -f ./Dockerfile .
-# or directly no-proxy
-# docker build -t rdma_dev:latest -f ./Dockerfile .
+./build_docker.sh
 ```
 
 ## Install MLNX_OFED_LINUX into Dev Image 
