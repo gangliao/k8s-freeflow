@@ -53,7 +53,8 @@ void update_host_list()
     CURL *easy_handle = curl_easy_init();
     CHECK_NOTNULL(easy_handle);
 
-    char buff_p[16] = NULL;
+    char buff_p[16];
+    memset(buff_p, 0, sizeof(buff_p))
 
     curl_easy_setopt(easy_handle, CURLOPT_URL, "https://10.142.104.73/v2/keys/Microsoft");
     curl_easy_setopt(easy_handle, CURLOPT_PORT, 2379);
