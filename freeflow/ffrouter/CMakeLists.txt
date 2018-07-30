@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(freeflow-router VERSION 0.1.0)
 
-find_package(curl REQUIRED)
+find_package(CURL REQUIRED)
+find_package (Threads REQUIRED)
 
 set(FFROUTER_SOURCE_DIR   ${CMAKE_CURRENT_SOURCE_DIR})
 set(FFROUTER_BINARY_DIR   ${CMAKE_CURRENT_BINARY_DIR})
