@@ -42,6 +42,13 @@
         "stack": "cpp",
         "string": "cpp",
         "string_view": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "iosfwd": "cpp",
+        "__bit_reference": "cpp",
+        "atomic": "cpp",
+        "chrono": "cpp",
+        "limits": "cpp",
+        "ratio": "cpp",
+        "system_error": "cpp"
     }
 }
