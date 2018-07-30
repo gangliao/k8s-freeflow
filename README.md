@@ -22,7 +22,8 @@ FROM $OS_ID:$OS_VERSION
 
 MAINTAINER Gang Liao <gangliao@cs.umd.edu>
 
-RUN yum install -y wget git curl sed grep vim make gcc-c++ libnl3-devel libtool && \
+RUN yum install -y wget git curl sed grep vim make gcc-c++ \
+    libcurl-devel libnl3-devel libtool && \
     yum clean all
 
 RUN yum install -y libxml2-python pciutils numactl-libs gtk2 atk cairo \
