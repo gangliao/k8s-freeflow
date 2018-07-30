@@ -5,8 +5,8 @@
 
 #include <curl/curl.h>
 #include <glog/logging.h>
-#include <json/json.h>
 #include <ifaddrs.h>
+#include <json/json.h>
 
 #include "rdma_api.h"
 #include "verbs_cmd.h"
@@ -37,13 +37,14 @@ size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
         return 0;
     }
 
-    std::string value = node["value"]; 
-    strncpy(user_p, value.c_str(), value.length());
+    std::string value = std::string(node["value"]);
+    strncpy(user_p, (void *)value.c_str(), value.length());
 
     return size * nmemb;
 }
 
-void update_host_list() {
+void update_host_list()
+{
     CURLcode return_code;
     return_code = curl_global_init(CURL_GLOBAL_SSL);
 
@@ -76,7 +77,7 @@ void update_host_list() {
     curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data);
     curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, buff_p);
 
-    std::cout << buff_p << std::endl; 
+    std::cout << buff_p << std::endl;
 
     CURLcode res = curl_easy_perform(easy_handle);
     /* Check for errors */
@@ -86,7 +87,7 @@ void update_host_list() {
     }
 
     curl_easy_cleanup(easy_handle);
-    curl_global_cleanup();    
+    curl_global_cleanup();
 }
 
 void mem_flush(const void *p, int allocation_size)
