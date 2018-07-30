@@ -37,8 +37,8 @@ size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
         return 0;
     }
 
-    std::string value = std::string(node["value"]);
-    strncpy(user_p, value.c_str(), sizeof(user_p));
+    std::string value = writer.write(node["value"]);
+    strncpy((char *)user_p, value.c_str(), value.length());
 
     return size * nmemb;
 }
@@ -54,7 +54,7 @@ void update_host_list()
     CHECK_NOTNULL(easy_handle);
 
     char buff_p[16];
-    memset(buff_p, 0, sizeof(buff_p))
+    memset(buff_p, 0, sizeof(buff_p));
 
     curl_easy_setopt(easy_handle, CURLOPT_URL, "https://10.142.104.73/v2/keys/Microsoft");
     curl_easy_setopt(easy_handle, CURLOPT_PORT, 2379);
