@@ -30,14 +30,15 @@ size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
         std::cout << "parse json error" << std::endl;
         return 0;
     }
-    string nodeString = writer.write(root["node"]);
+    std::string nodeString = writer.write(root["node"]);
     if (!reader.parse(nodeString, node))
     {
         std::cout << "parse json error" << std::endl;
         return 0;
     }
 
-    strncpy(user_p, node["value"].c_str(), node["value"].length());
+    std::string value = node["value"]; 
+    strncpy(user_p, value.c_str(), value.length());
 
     return size * nmemb;
 }
