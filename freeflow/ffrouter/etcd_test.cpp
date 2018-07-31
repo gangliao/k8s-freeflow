@@ -109,13 +109,16 @@ size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 
     if (!kv.empty())
     {
-        std::string key = kv[0]["kv"]["key"].asString();
-        std::string val = kv[0]["kv"]["value"].asString();
+        if (kv[0]["type"].asString() != "DELETE")
+        {
+            std::string key = kv[0]["kv"]["key"].asString();
+            std::string val = kv[0]["kv"]["value"].asString();
 
-        key = (char *)b64_decode(key.c_str(), key.length());
-        val = (char *)b64_decode(val.c_str(), val.length());
+            key = (char *)b64_decode(key.c_str(), key.length());
+            val = (char *)b64_decode(val.c_str(), val.length());
 
-        LOG(INFO) << key << " : " << val;
+            LOG(INFO) << key << " : " << val;
+        }
     }
 
     return size * nmemb;
@@ -160,7 +163,7 @@ TEST(ETCDv3, WatchValueChange)
 
     CURLcode res = curl_easy_perform(easy_handle);
 
-    EXPECT_EQ(res, CURLE_OK) << curl_easy_strerror(res); 
+    EXPECT_EQ(res, CURLE_OK) << curl_easy_strerror(res);
 
     curl_easy_cleanup(easy_handle);
     curl_global_cleanup();
