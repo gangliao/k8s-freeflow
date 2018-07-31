@@ -84,26 +84,22 @@ TEST(ETCDv2, GetValue)
 size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
     Json::Value root;
-    Json::Value kvs;
-    Json::Reader reader;
-    Json::FastWriter writer;
+    Json::Value kv;
     std::string json = (char *)buffer;
 
-    std::cout << json << std::endl;
+    LOG(INFO) << "parsing json: " << json << std::endl;
 
     if (!reader.parse(json, root))
     {
         std::cout << "parse json error" << std::endl;
         return 0;
     }
-    std::string kvsString = writer.write(root["kvs"][0]);
-    if (!reader.parse(kvsString, kvs))
-    {
-        std::cout << "parse json error" << std::endl;
-        return 0;
-    }
 
-    *(std::string *)user_p = writer.write(kvs["value"]);
+    kv              = root["result"]["events"];
+    std::string key = kv[0]["kv"].get("key", "UTF-8").asString();
+    std::string val = kv[0]["kv"].get("value", "UTF-8").asString();
+
+    LOG(INFO) << key << " : " << val;
 
     return size * nmemb;
 }
@@ -119,8 +115,6 @@ TEST(ETCDv3, WatchValueChange)
 
     CURL *easy_handle = curl_easy_init();
     CHECK_NOTNULL(easy_handle);
-
-    std::string buff_p;
 
     curl_easy_setopt(easy_handle, CURLOPT_URL, "https://10.142.104.73/v3alpha/watch");
     curl_easy_setopt(easy_handle, CURLOPT_PORT, 2379);
@@ -145,7 +139,7 @@ TEST(ETCDv3, WatchValueChange)
     curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
 
     curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data_v3);
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &buff_p);
+    curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, NULL);
 
     CURLcode res = curl_easy_perform(easy_handle);
     /* Check for errors */
@@ -153,8 +147,6 @@ TEST(ETCDv3, WatchValueChange)
     {
         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
     }
-
-    std::cout << buff_p << std::endl;
 
     curl_easy_cleanup(easy_handle);
     curl_global_cleanup();
