@@ -96,11 +96,18 @@ size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
         return 0;
     }
 
-    kv              = root["result"]["events"];
-    std::string key = kv[0]["kv"].get("key", "UTF-8").asString();
-    std::string val = kv[0]["kv"].get("value", "UTF-8").asString();
+    kv = root["result"]["events"];
 
-    LOG(INFO) << key << " : " << val;
+    if (!kv.empty())
+    {
+        std::string key = kv[0]["kv"]["key"].asString();
+        std::string val = kv[0]["kv"]["value"].asString();
+
+        key = (char *)b64_decode(key.c_str(), key.length());
+        val = (char *)b64_decode(val.c_str(), val.length());
+
+        LOG(INFO) << key << " : " << val;
+    }
 
     return size * nmemb;
 }
