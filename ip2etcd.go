@@ -47,7 +47,7 @@ var (
 
 	kubeconfig *string
 
-	ipMap = make(map[string]string)
+	ipEtcdCache = make(map[string]string)
 )
 
 const (
@@ -158,26 +158,21 @@ func updateIP(namespace *string, clientset *kubernetes.Clientset, endpoints []st
 		}
 
 		// update ip into new map
-		ipNewMap := make(map[string]string)
+		ipChangedMap := make(map[string]string)
 		for _, pod := range pods.Items {
-			if hostOldIP, ok := ipMap[pod.Status.PodIP]; ok {
+			if hostOldIP, ok := ipEtcdCache[pod.Status.PodIP]; ok {
 				if hostOldIP == pod.Status.HostIP {
 					continue
 				}
 			}
-			fmt.Println(pod.Status.PodIP + " <- " + pod.Status.HostIP)
-			ipMap[pod.Status.PodIP] = pod.Status.HostIP
-			ipNewMap[pod.Status.PodIP] = pod.Status.HostIP
+			// fmt.Println(pod.Status.PodIP + " <- " + pod.Status.HostIP)
+			ipEtcdCache[pod.Status.PodIP] = pod.Status.HostIP
+			ipChangedMap[pod.Status.PodIP] = pod.Status.HostIP
 		}
 
 		// delete key-value ip map in etcd recursively
-		if len(ipNewMap) != 0 {
-			_, err := clientetcd.Delete(context.Background(), keyDir, clientv3.WithPrefix())
-			if err != nil {
-				panic(err.Error())
-			}
-
-			for k, v := range ipNewMap {
+		if len(ipChangedMap) != 0 {
+			for k, v := range ipChangedMap {
 				_, err := clientetcd.Put(context.Background(), keyDir+k, v)
 				if err != nil {
 					panic(err.Error())
