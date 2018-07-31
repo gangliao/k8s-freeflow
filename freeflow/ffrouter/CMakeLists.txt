@@ -15,6 +15,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(bazel)
 include(jsoncpp)
 include(curl)
+include(base64)
 
 
 cc_binary(router
@@ -22,4 +23,4 @@ cc_binary(router
           DEPS glog curl jsoncpp gflags)
 target_link_libraries(router -L/usr/lib rdmacm ibverbs)
 
-cc_test(etcd_test SRCS etcd_test.cpp DEPS jsoncpp glog curl)
+cc_test(etcd_test SRCS etcd_test.cpp DEPS jsoncpp glog curl base64)
