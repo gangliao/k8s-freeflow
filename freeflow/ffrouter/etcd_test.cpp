@@ -191,7 +191,7 @@ TEST(ETCDv3, GetKVUnderDirectory)
             key = (char *)b64_decode(key.c_str(), key.length());
             val = (char *)b64_decode(val.c_str(), val.length());
 
-            LOG(INFO) << key << "<->" << val;
+            LOG(INFO) << key << "\t" << val;
         }
     }
 
