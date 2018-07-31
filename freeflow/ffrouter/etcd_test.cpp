@@ -85,6 +85,7 @@ size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
     Json::Value root;
     Json::Value kv;
+    Json::Reader reader;
     std::string json = (char *)buffer;
 
     LOG(INFO) << "parsing json: " << json << std::endl;
