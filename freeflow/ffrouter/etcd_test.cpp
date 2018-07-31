@@ -122,7 +122,7 @@ TEST(ETCDv3, WatchValueChange)
 
     std::string buff_p;
 
-    curl_easy_setopt(easy_handle, CURLOPT_URL, "https://10.142.104.73/v3alpha/kv/watch");
+    curl_easy_setopt(easy_handle, CURLOPT_URL, "https://10.142.104.73/v3alpha/watch");
     curl_easy_setopt(easy_handle, CURLOPT_PORT, 2379);
 
     struct curl_slist *headers = NULL;
