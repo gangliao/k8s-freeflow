@@ -89,6 +89,8 @@ size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
     Json::FastWriter writer;
     std::string json = (char *)buffer;
 
+    std::cout << json << std::endl;
+
     if (!reader.parse(json, root))
     {
         std::cout << "parse json error" << std::endl;
