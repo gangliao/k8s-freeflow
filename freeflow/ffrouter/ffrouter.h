@@ -46,9 +46,7 @@
 #include <gflags/gflags.h>
 
 DECLARE_bool(etcd_enbale_tls);
-DECLARE_string(etcd_cert);
 DECLARE_string(etcd_cacert);
-DECLARE_string(etcd_key);
 DECLARE_string(etcd_url);
 
 #define UDP_PORT 11232

@@ -12,10 +12,8 @@
 #include "verbs_cmd.h"
 
 DEFINE_bool(etcd_enbale_tls, true, "Transport Layer Security for ETCD Communication.");
-DEFINE_string(etcd_cert, "/etc/etcd/ssl/etcd.pem", "comma-separated list of languages to offer in the 'lang' menu");
-DEFINE_string(etcd_cacert, "/etc/kubernetes/ssl/ca.pem", "comma-separated list of languages to offer in the 'lang' menu");
-DEFINE_string(etcd_key, "/etc/etcd/ssl/etcd-key.pem", "comma-separated list of languages to offer in the 'lang' menu");
-DEFINE_string(etcd_url, "https://10.142.104.73/v2/keys/", "comma-separated list of languages to offer in the 'lang' menu");
+DEFINE_string(etcd_cacert, "/etc/kubernetes/ssl/ca.pem", "Certificate Authority (CA) public keys (CA certs).");
+DEFINE_string(etcd_url, "https://10.142.104.73/v2/keys/", "URL for ETCD's Key Value Storage.");
 
 size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
@@ -60,20 +58,8 @@ void update_host_list()
 
     if (FLAGS_etcd_enbale_tls)
     {
-        /* since PEM is default, we needn't set it for PEM */
-        curl_easy_setopt(easy_handle, CURLOPT_SSLCERTTYPE, "PEM");
-
-        /* set the cert for client authentication */
-        curl_easy_setopt(easy_handle, CURLOPT_SSLCERT, &FLAGS_etcd_cert);
-
-        /* set the private key (file or ID in engine) */
-        static const char *pKeyType = "PEM";
-        curl_easy_setopt(easy_handle, CURLOPT_SSLKEYTYPE, pKeyType);
-        curl_easy_setopt(easy_handle, CURLOPT_SSLKEY, &FLAGS_etcd_key);
-
         /* set the file with the certs vaildating the server */
         curl_easy_setopt(easy_handle, CURLOPT_CAINFO, &FLAGS_etcd_cacert);
-
         /* disconnect if we can't validate server's cert */
         curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
     }
