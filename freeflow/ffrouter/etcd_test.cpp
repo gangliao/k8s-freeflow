@@ -143,13 +143,14 @@ TEST(ETCDv3, WatchValueChange)
     headers                    = curl_slist_append(headers, "Content-Type: application/json");
     curl_easy_setopt(easy_handle, CURLOPT_HTTPHEADER, headers);
 
-    std::string key   = "Microsoft";
-    char *encoded_key = b64_encode((const unsigned char *)key.c_str(), key.length());
-
+    std::string key       = "Microsoft/FreeFlow";
+    std::string end_key   = "Microsoft/FreeFlox";
+    char *encoded_key     = b64_encode((const unsigned char *)key.c_str(), key.length());
+    char *encoded_end_key = b64_encode((const unsigned char *)end_key.c_str(), end_key.length());
     LOG(INFO) << "base64 encoding [Microsoft] to [" << encoded_key << "]";
 
     char post_fields[1024];
-    sprintf(post_fields, "{\"create_request\": {\"key\": \"%s\"}}", encoded_key);
+    sprintf(post_fields, "{\"create_request\": {\"key\": \"%s\", \"range_end\": \"%s\"}}", encoded_key, encoded_end_key);
     curl_easy_setopt(easy_handle, CURLOPT_CUSTOMREQUEST, "POST");
     curl_easy_setopt(easy_handle, CURLOPT_POSTFIELDS, post_fields);
 
