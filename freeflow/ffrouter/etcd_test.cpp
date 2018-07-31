@@ -144,10 +144,15 @@ TEST(ETCDv3, WatchValueChange)
     curl_easy_setopt(easy_handle, CURLOPT_HTTPHEADER, headers);
 
     std::string key       = "Microsoft/FreeFlow";
-    std::string end_key   = "Microsoft/FreeFlox";
     char *encoded_key     = b64_encode((const unsigned char *)key.c_str(), key.length());
-    char *encoded_end_key = b64_encode((const unsigned char *)end_key.c_str(), end_key.length());
+    char *encoded_end_key = b64_encode((const unsigned char *)key.c_str(), key.length());
+
     LOG(INFO) << "base64 encoding [Microsoft] to [" << encoded_key << "]";
+
+    // If range_end is key plus one (e.g., "aa"+1 == "ab", "a\xff"+1 == "b"), then the 
+    // range represents all keys prefixed with key.
+    size_t n = strlen(encoded_end_key);
+    encoded_end_key[n - 1] = encoded_key[n - 1] + 1;
 
     char post_fields[1024];
     sprintf(post_fields, "{\"create_request\": {\"key\": \"%s\", \"range_end\": \"%s\"}}", encoded_key, encoded_end_key);
@@ -165,6 +170,9 @@ TEST(ETCDv3, WatchValueChange)
     CURLcode res = curl_easy_perform(easy_handle);
 
     EXPECT_EQ(res, CURLE_OK) << curl_easy_strerror(res);
+
+    free(encoded_key);
+    free(encoded_end_key);
 
     curl_easy_cleanup(easy_handle);
     curl_global_cleanup();
