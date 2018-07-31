@@ -12,17 +12,11 @@ size_t process_data_v2(void *buffer, size_t size, size_t nmemb, void *user_p)
     Json::FastWriter writer;
     std::string json = (char *)buffer;
 
-    if (!reader.parse(json, root))
-    {
-        std::cout << "parse json error" << std::endl;
-        return 0;
-    }
+    CHECK_NOTNULL(reader.parse(json, root));
+
     std::string nodeString = writer.write(root["node"]);
-    if (!reader.parse(nodeString, node))
-    {
-        std::cout << "parse json error" << std::endl;
-        return 0;
-    }
+
+    CHECK_NOTNULL(reader.parse(nodeString, node));
 
     *(std::string *)user_p = writer.write(node["value"]);
 
@@ -69,11 +63,8 @@ TEST(ETCDv2, GetValue)
     curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &buff_p);
 
     CURLcode res = curl_easy_perform(easy_handle);
-    /* Check for errors */
-    if (res != CURLE_OK)
-    {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    }
+
+    EXPECT_EQ(res, CURLE_OK) << curl_easy_strerror(res);
 
     std::cout << buff_p << std::endl;
 
@@ -90,11 +81,7 @@ size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 
     LOG(INFO) << "parsing json: " << json << std::endl;
 
-    if (!reader.parse(json, root))
-    {
-        std::cout << "parse json error" << std::endl;
-        return 0;
-    }
+    CHECK_NOTNULL(reader.parse(json, root));
 
     kv = root["result"]["events"];
 
@@ -150,11 +137,8 @@ TEST(ETCDv3, WatchValueChange)
     curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, NULL);
 
     CURLcode res = curl_easy_perform(easy_handle);
-    /* Check for errors */
-    if (res != CURLE_OK)
-    {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    }
+
+    EXPECT_EQ(res, CURLE_OK) << curl_easy_strerror(res); 
 
     curl_easy_cleanup(easy_handle);
     curl_global_cleanup();
