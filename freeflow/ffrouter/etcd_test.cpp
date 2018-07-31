@@ -94,34 +94,30 @@ TEST(ETCDv2, GetValue)
     curl_global_cleanup();
 }
 
+struct MemoryStruct
+{
+    char *memory;
+    size_t size;
+};
+
 size_t process_range_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
-    Json::Value root;
-    Json::Value kv;
-    Json::Reader reader;
-    std::string json = (char *)buffer;
+    size_t realsize          = size * nmemb;
+    struct MemoryStruct *mem = (struct MemoryStruct *)user_p;
 
-    LOG(INFO) << "parsing json: " << json;
-
-    EXPECT_TRUE(reader.parse(json, root));
-
-    kv = root["kvs"];
-
-    if (!kv.empty())
+    mem->memory = (char *)realloc(mem->memory, mem->size + realsize + 1);
+    if (mem->memory == NULL)
     {
-        for (int i = 0; i < kv.size(); ++i)
-        {
-            std::string key = kv[i]["key"].asString();
-            std::string val = kv[i]["value"].asString();
-
-            key = (char *)b64_decode(key.c_str(), key.length());
-            val = (char *)b64_decode(val.c_str(), val.length());
-
-            LOG(INFO) << key << " : " << val;
-        }
+        /* out of memory! */
+        printf("not enough memory (realloc returned NULL)\n");
+        return 0;
     }
 
-    return size * nmemb;
+    memcpy(&(mem->memory[mem->size]), buffer, realsize);
+    mem->size += realsize;
+    mem->memory[mem->size] = 0;
+
+    return realsize;
 }
 
 TEST(ETCDv3, GetKVUnderDirectory)
@@ -165,12 +161,41 @@ TEST(ETCDv3, GetKVUnderDirectory)
     curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
 
     curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_range_v3);
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, NULL);
+
+    struct MemoryStruct chunk;
+
+    chunk.memory = (char *)malloc(1); /* will be grown as needed by the realloc above */
+    chunk.size   = 0;                 /* no data at this point */
+    curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, (void *)&chunk);
 
     CURLcode res = curl_easy_perform(easy_handle);
 
     EXPECT_EQ(res, CURLE_OK) << curl_easy_strerror(res);
 
+    Json::Value root;
+    Json::Value kv;
+    Json::Reader reader;
+    std::string json = chunk.memory;
+
+    EXPECT_TRUE(reader.parse(json, root));
+
+    kv = root["kvs"];
+
+    if (!kv.empty())
+    {
+        for (int i = 0; i < kv.size(); ++i)
+        {
+            std::string key = kv[i]["key"].asString();
+            std::string val = kv[i]["value"].asString();
+
+            key = (char *)b64_decode(key.c_str(), key.length());
+            val = (char *)b64_decode(val.c_str(), val.length());
+
+            LOG(INFO) << key << "<->" << val;
+        }
+    }
+
+    free(chunk.memory);
     free(encoded_key);
     free(encoded_end_key);
 
