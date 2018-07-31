@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 #include <json/json.h>
 
-size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
+size_t process_data_v2(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
     Json::Value root;
     Json::Value node;
@@ -65,7 +65,7 @@ TEST(ETCDv2, GetValue)
     /* disconnect if we can't validate server's cert */
     curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
 
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data);
+    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data_v2);
     curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &buff_p);
 
     CURLcode res = curl_easy_perform(easy_handle);
@@ -79,6 +79,31 @@ TEST(ETCDv2, GetValue)
 
     curl_easy_cleanup(easy_handle);
     curl_global_cleanup();
+}
+
+size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
+{
+    Json::Value root;
+    Json::Value node;
+    Json::Reader reader;
+    Json::FastWriter writer;
+    std::string json = (char *)buffer;
+
+    if (!reader.parse(json, root))
+    {
+        std::cout << "parse json error" << std::endl;
+        return 0;
+    }
+    std::string nodeString = writer.write(root["kvs"]);
+    if (!reader.parse(nodeString, node))
+    {
+        std::cout << "parse json error" << std::endl;
+        return 0;
+    }
+
+    *(std::string *)user_p = writer.write(node["value"]);
+
+    return size * nmemb;
 }
 
 TEST(ETCDv3, WatchValueChange)
@@ -117,7 +142,7 @@ TEST(ETCDv3, WatchValueChange)
     /* disconnect if we can't validate server's cert */
     curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
 
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data);
+    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data_v3);
     curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &buff_p);
 
     CURLcode res = curl_easy_perform(easy_handle);
