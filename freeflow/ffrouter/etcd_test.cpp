@@ -84,7 +84,7 @@ TEST(ETCDv2, GetValue)
 size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
     Json::Value root;
-    Json::Value node;
+    Json::Value kvs;
     Json::Reader reader;
     Json::FastWriter writer;
     std::string json = (char *)buffer;
@@ -94,14 +94,14 @@ size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
         std::cout << "parse json error" << std::endl;
         return 0;
     }
-    std::string nodeString = writer.write(root["kvs"]);
-    if (!reader.parse(nodeString, node))
+    std::string kvsString = writer.write(root["kvs"][0]);
+    if (!reader.parse(kvsString, kvs))
     {
         std::cout << "parse json error" << std::endl;
         return 0;
     }
 
-    *(std::string *)user_p = writer.write(node["value"]);
+    *(std::string *)user_p = writer.write(kvs["value"]);
 
     return size * nmemb;
 }
