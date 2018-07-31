@@ -23,7 +23,7 @@ size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
         return 0;
     }
 
-    *(std::string*)user_p = writer.write(node["value"]); 
+    *(std::string *)user_p = writer.write(node["value"]);
 
     return size * nmemb;
 }

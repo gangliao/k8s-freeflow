@@ -17,7 +17,9 @@ include(jsoncpp)
 include(curl)
 
 
-cc_binary(router SRCS main.cpp ffrouter.cpp rdma_api.cpp verbs_cmd.cpp shared_memory.cpp)
-target_link_libraries(router -L/usr/lib rdmacm ibverbs glog curl jsoncpp)
+cc_binary(router
+          SRCS main.cpp ffrouter.cpp rdma_api.cpp verbs_cmd.cpp shared_memory.cpp
+          DEPS glog curl jsoncpp gflags)
+target_link_libraries(router -L/usr/lib rdmacm ibverbs)
 
 cc_test(etcd_test SRCS etcd_test.cpp DEPS jsoncpp glog curl)
