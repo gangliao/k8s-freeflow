@@ -94,25 +94,25 @@ TEST(ETCDv2, GetValue)
     curl_global_cleanup();
 }
 
-size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
+size_t process_range_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
     Json::Value root;
     Json::Value kv;
     Json::Reader reader;
     std::string json = (char *)buffer;
 
-    LOG(INFO) << "parsing json: " << json << std::endl;
+    LOG(INFO) << "parsing json: " << json;
 
     EXPECT_TRUE(reader.parse(json, root));
 
-    kv = root["result"]["events"];
+    kv = root["kvs"];
 
     if (!kv.empty())
     {
-        if (kv[0]["type"].asString() != "DELETE")
+        for (int i = 0; i < kv.size(); ++i)
         {
-            std::string key = kv[0]["kv"]["key"].asString();
-            std::string val = kv[0]["kv"]["value"].asString();
+            std::string key = kv[i]["key"].asString();
+            std::string val = kv[i]["value"].asString();
 
             key = (char *)b64_decode(key.c_str(), key.length());
             val = (char *)b64_decode(val.c_str(), val.length());
@@ -149,9 +149,9 @@ TEST(ETCDv3, GetKVUnderDirectory)
 
     LOG(INFO) << "base64 encoding [Microsoft] to [" << encoded_key << "]";
 
-    // If range_end is key plus one (e.g., "aa"+1 == "ab", "a\xff"+1 == "b"), then the 
+    // If range_end is key plus one (e.g., "aa"+1 == "ab", "a\xff"+1 == "b"), then the
     // range represents all keys prefixed with key.
-    size_t n = strlen(encoded_end_key);
+    size_t n               = strlen(encoded_end_key);
     encoded_end_key[n - 1] = encoded_key[n - 1] + 1;
 
     char post_fields[1024];
@@ -164,7 +164,7 @@ TEST(ETCDv3, GetKVUnderDirectory)
     /* disconnect if we can't validate server's cert */
     curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
 
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data_v3);
+    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_range_v3);
     curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, NULL);
 
     CURLcode res = curl_easy_perform(easy_handle);
@@ -176,6 +176,36 @@ TEST(ETCDv3, GetKVUnderDirectory)
 
     curl_easy_cleanup(easy_handle);
     curl_global_cleanup();
+}
+
+size_t process_watch_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
+{
+    Json::Value root;
+    Json::Value kv;
+    Json::Reader reader;
+    std::string json = (char *)buffer;
+
+    LOG(INFO) << "parsing json: " << json << std::endl;
+
+    EXPECT_TRUE(reader.parse(json, root));
+
+    kv = root["result"]["events"];
+
+    if (!kv.empty())
+    {
+        if (kv[0]["type"].asString() != "DELETE")
+        {
+            std::string key = kv[0]["kv"]["key"].asString();
+            std::string val = kv[0]["kv"]["value"].asString();
+
+            key = (char *)b64_decode(key.c_str(), key.length());
+            val = (char *)b64_decode(val.c_str(), val.length());
+
+            LOG(INFO) << key << " : " << val;
+        }
+    }
+
+    return size * nmemb;
 }
 
 TEST(ETCDv3, WatchValueChange)
@@ -203,9 +233,9 @@ TEST(ETCDv3, WatchValueChange)
 
     LOG(INFO) << "base64 encoding [Microsoft] to [" << encoded_key << "]";
 
-    // If range_end is key plus one (e.g., "aa"+1 == "ab", "a\xff"+1 == "b"), then the 
+    // If range_end is key plus one (e.g., "aa"+1 == "ab", "a\xff"+1 == "b"), then the
     // range represents all keys prefixed with key.
-    size_t n = strlen(encoded_end_key);
+    size_t n               = strlen(encoded_end_key);
     encoded_end_key[n - 1] = encoded_key[n - 1] + 1;
 
     char post_fields[1024];
@@ -218,7 +248,7 @@ TEST(ETCDv3, WatchValueChange)
     /* disconnect if we can't validate server's cert */
     curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
 
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data_v3);
+    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_watch_v3);
     curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, NULL);
 
     CURLcode res = curl_easy_perform(easy_handle);
