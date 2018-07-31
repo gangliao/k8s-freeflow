@@ -41,13 +41,10 @@ import (
 )
 
 var (
-	cert   *string
-	key    *string
-	caCert *string
-
+	cert       *string
+	key        *string
+	caCert     *string
 	kubeconfig *string
-
-	ipEtcdCache = make(map[string]string)
 )
 
 const (
@@ -156,6 +153,9 @@ func updateIP(namespace *string, clientset *kubernetes.Clientset, endpoints []st
 		panic(err.Error())
 	}
 
+	// ipPrecedeMap: whole IP map during the prev round
+	ipPrecedeMap := make(map[string]string)
+
 	for true {
 		// Fetch pod information
 		pods, err := clientset.CoreV1().Pods(*namespace).List(metav1.ListOptions{})
@@ -163,30 +163,42 @@ func updateIP(namespace *string, clientset *kubernetes.Clientset, endpoints []st
 			panic(err.Error())
 		}
 
-		// Update ip into new map
-		ipNewMap := make(map[string]string)
+		// ipCurrentMap: whole IP map during the cur round
+		ipCurrentMap := make(map[string]string)
+		// ipChangedMap: changed IP map between the prev and cur round
 		ipChangedMap := make(map[string]string)
+
 		for _, pod := range pods.Items {
-			ipNewMap[pod.Status.PodIP] = pod.Status.HostIP
-			if hostOldIP, ok := ipEtcdCache[pod.Status.PodIP]; ok {
-				if hostOldIP == pod.Status.HostIP {
+			ipCurrentMap[pod.Status.PodIP] = pod.Status.HostIP
+			if precedeHostIP, ok := ipPrecedeMap[pod.Status.PodIP]; ok {
+				if precedeHostIP == pod.Status.HostIP {
 					continue
 				}
 			}
 			ipChangedMap[pod.Status.PodIP] = pod.Status.HostIP
 		}
 
-		// Delete key-value ip map in etcd recursively
-		if len(ipChangedMap) != 0 {
-			for k, v := range ipChangedMap {
-				_, err := clientetcd.Put(context.Background(), keyDir+k, v)
+		// Add changed IP into ETCD
+		for k, v := range ipChangedMap {
+			_, err := clientetcd.Put(context.Background(), keyDir+k, v)
+			if err != nil {
+				panic(err.Error())
+			}
+		}
+
+		// Delete expired IP from ETCD
+		// Memory Optimization on server side which on watch mode can capture this signal
+		// and delete the expired ip entries.
+		for k := range ipPrecedeMap {
+			if _, ok := ipCurrentMap[k]; !ok {
+				_, err := clientetcd.Delete(context.Background(), keyDir+k)
 				if err != nil {
 					panic(err.Error())
 				}
 			}
 		}
 
-		ipEtcdCache = ipNewMap
+		ipPrecedeMap = ipCurrentMap
 		time.Sleep(updateTime)
 	}
 
