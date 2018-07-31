@@ -47,7 +47,7 @@ TEST(ETCD, GetValue)
 
     std::string buff_p;
 
-    curl_easy_setopt(easy_handle, CURLOPT_URL, "https://10.142.104.73/v2/keys/Microsoft?wait=true\&recursive=true");
+    curl_easy_setopt(easy_handle, CURLOPT_URL, "https://10.142.104.73/v2/keys/Microsoft");
     curl_easy_setopt(easy_handle, CURLOPT_PORT, 2379);
 
     /* since PEM is default, we needn't set it for PEM */
