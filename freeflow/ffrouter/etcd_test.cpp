@@ -12,11 +12,11 @@ size_t process_data_v2(void *buffer, size_t size, size_t nmemb, void *user_p)
     Json::FastWriter writer;
     std::string json = (char *)buffer;
 
-    CHECK_NOTNULL(reader.parse(json, root));
+    EXPECT_TRUE(reader.parse(json, root));
 
     std::string nodeString = writer.write(root["node"]);
 
-    CHECK_NOTNULL(reader.parse(nodeString, node));
+    EXPECT_TRUE(reader.parse(nodeString, node));
 
     *(std::string *)user_p = writer.write(node["value"]);
 
@@ -81,7 +81,7 @@ size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 
     LOG(INFO) << "parsing json: " << json << std::endl;
 
-    CHECK_NOTNULL(reader.parse(json, root));
+    EXPECT_TRUE(reader.parse(json, root));
 
     kv = root["result"]["events"];
 
