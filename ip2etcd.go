@@ -158,15 +158,15 @@ func updateIP(namespace *string, clientset *kubernetes.Clientset, endpoints []st
 		}
 
 		// update ip into new map
+		ipNewMap := make(map[string]string)
 		ipChangedMap := make(map[string]string)
 		for _, pod := range pods.Items {
+			ipNewMap[pod.Status.PodIP] = pod.Status.HostIP
 			if hostOldIP, ok := ipEtcdCache[pod.Status.PodIP]; ok {
 				if hostOldIP == pod.Status.HostIP {
 					continue
 				}
 			}
-			// fmt.Println(pod.Status.PodIP + " <- " + pod.Status.HostIP)
-			ipEtcdCache[pod.Status.PodIP] = pod.Status.HostIP
 			ipChangedMap[pod.Status.PodIP] = pod.Status.HostIP
 		}
 
@@ -180,6 +180,7 @@ func updateIP(namespace *string, clientset *kubernetes.Clientset, endpoints []st
 			}
 		}
 
+		ipEtcdCache = ipNewMap
 		time.Sleep(updateTime)
 	}
 
