@@ -150,14 +150,20 @@ func updateIP(namespace *string, clientset *kubernetes.Clientset, endpoints []st
 	clientetcd := etcdClient(endpoints)
 	defer clientetcd.Close()
 
+	// clean etcd ip map after restarting the program
+	_, err := clientetcd.Delete(context.Background(), keyDir, clientv3.WithPrefix())
+	if err != nil {
+		panic(err.Error())
+	}
+
 	for true {
-		// fetch pod information
+		// Fetch pod information
 		pods, err := clientset.CoreV1().Pods(*namespace).List(metav1.ListOptions{})
 		if err != nil {
 			panic(err.Error())
 		}
 
-		// update ip into new map
+		// Update ip into new map
 		ipNewMap := make(map[string]string)
 		ipChangedMap := make(map[string]string)
 		for _, pod := range pods.Items {
@@ -170,7 +176,7 @@ func updateIP(namespace *string, clientset *kubernetes.Clientset, endpoints []st
 			ipChangedMap[pod.Status.PodIP] = pod.Status.HostIP
 		}
 
-		// delete key-value ip map in etcd recursively
+		// Delete key-value ip map in etcd recursively
 		if len(ipChangedMap) != 0 {
 			for k, v := range ipChangedMap {
 				_, err := clientetcd.Put(context.Background(), keyDir+k, v)
