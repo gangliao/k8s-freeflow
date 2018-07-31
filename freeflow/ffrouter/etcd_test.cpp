@@ -30,7 +30,7 @@ size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
     return size * nmemb;
 }
 
-TEST(ETCD, GetValue)
+TEST(ETCDv2, GetValue)
 {
     static const char *pCertFile   = "/etc/etcd/ssl/etcd.pem";
     static const char *pCACertFile = "/etc/kubernetes/ssl/ca.pem";
@@ -82,7 +82,7 @@ TEST(ETCD, GetValue)
     curl_global_cleanup();
 }
 
-TEST(ETCD, WatchValueChange)
+TEST(ETCDv3, WatchValueChange)
 {
     static const char *pCACertFile = "/etc/kubernetes/ssl/ca.pem";
 

@@ -49,6 +49,7 @@
         "chrono": "cpp",
         "limits": "cpp",
         "ratio": "cpp",
-        "system_error": "cpp"
+        "system_error": "cpp",
+        "__string": "cpp"
     }
 }
