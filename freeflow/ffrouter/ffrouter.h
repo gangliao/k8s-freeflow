@@ -45,7 +45,7 @@
 
 #include <gflags/gflags.h>
 
-DECLARE_bool(etcd_enbale_tls)
+DECLARE_bool(etcd_enbale_tls);
 DECLARE_string(etcd_cert);
 DECLARE_string(etcd_cacert);
 DECLARE_string(etcd_key);
