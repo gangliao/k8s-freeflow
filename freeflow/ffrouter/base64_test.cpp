@@ -1,7 +1,6 @@
 #include <b64.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
-#include <stddef.h>
 
 // https://www.base64encode.org/
 

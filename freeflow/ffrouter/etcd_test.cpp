@@ -3,7 +3,6 @@
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <json/json.h>
-#include <stddef.h>
 
 size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
