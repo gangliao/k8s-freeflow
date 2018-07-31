@@ -25,6 +25,7 @@
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <json/json.h>
+#include <unordered_map>
 
 size_t process_data_v2(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
@@ -203,6 +204,8 @@ TEST(ETCDv3, GetKVUnderDirectory)
     curl_global_cleanup();
 }
 
+static std::unordered_map<std::string, std::string> g_kv_map;
+
 size_t process_watch_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
     Json::Value root;
@@ -218,15 +221,21 @@ size_t process_watch_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 
     if (!kv.empty())
     {
+        std::string encode_key = kv[0]["kv"]["key"].asString();
+        std::string decode_key = (char *)b64_decode(encode_key.c_str(), encode_key.length());
+
         if (kv[0]["type"].asString() != "DELETE")
         {
-            std::string key = kv[0]["kv"]["key"].asString();
-            std::string val = kv[0]["kv"]["value"].asString();
+            std::string encode_val = kv[0]["kv"]["value"].asString();
+            std::string decode_val = (char *)b64_decode(encode_val.c_str(), encode_val.length());
 
-            key = (char *)b64_decode(key.c_str(), key.length());
-            val = (char *)b64_decode(val.c_str(), val.length());
-
-            LOG(INFO) << key << " : " << val;
+            LOG(INFO) << "Add or update: (" << decode_key << "\t, " << decode_val << ")";
+            g_kv_map[decode_key] = decode_val;
+        }
+        else
+        {
+            LOG(INFO) << "Delete key: " << decode_key;
+            g_kv_map.erase(decode_key);
         }
     }
 
