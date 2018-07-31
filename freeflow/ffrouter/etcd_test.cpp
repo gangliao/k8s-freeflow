@@ -124,6 +124,60 @@ size_t process_data_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
     return size * nmemb;
 }
 
+TEST(ETCDv3, GetKVUnderDirectory)
+{
+    static const char *pCACertFile = "/etc/kubernetes/ssl/ca.pem";
+
+    CURLcode return_code;
+    return_code = curl_global_init(CURL_GLOBAL_SSL);
+
+    EXPECT_EQ(CURLE_OK, return_code) << "init libcurl failed.";
+
+    CURL *easy_handle = curl_easy_init();
+    CHECK_NOTNULL(easy_handle);
+
+    curl_easy_setopt(easy_handle, CURLOPT_URL, "https://10.142.104.73/v3alpha/kv/range");
+    curl_easy_setopt(easy_handle, CURLOPT_PORT, 2379);
+
+    struct curl_slist *headers = NULL;
+    headers                    = curl_slist_append(headers, "Content-Type: application/json");
+    curl_easy_setopt(easy_handle, CURLOPT_HTTPHEADER, headers);
+
+    std::string key       = "Microsoft/FreeFlow";
+    char *encoded_key     = b64_encode((const unsigned char *)key.c_str(), key.length());
+    char *encoded_end_key = b64_encode((const unsigned char *)key.c_str(), key.length());
+
+    LOG(INFO) << "base64 encoding [Microsoft] to [" << encoded_key << "]";
+
+    // If range_end is key plus one (e.g., "aa"+1 == "ab", "a\xff"+1 == "b"), then the 
+    // range represents all keys prefixed with key.
+    size_t n = strlen(encoded_end_key);
+    encoded_end_key[n - 1] = encoded_key[n - 1] + 1;
+
+    char post_fields[1024];
+    sprintf(post_fields, "{\"key\": \"%s\", \"range_end\": \"%s\"}", encoded_key, encoded_end_key);
+    curl_easy_setopt(easy_handle, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_easy_setopt(easy_handle, CURLOPT_POSTFIELDS, post_fields);
+
+    /* set the file with the certs vaildating the server */
+    curl_easy_setopt(easy_handle, CURLOPT_CAINFO, pCACertFile);
+    /* disconnect if we can't validate server's cert */
+    curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
+
+    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data_v3);
+    curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, NULL);
+
+    CURLcode res = curl_easy_perform(easy_handle);
+
+    EXPECT_EQ(res, CURLE_OK) << curl_easy_strerror(res);
+
+    free(encoded_key);
+    free(encoded_end_key);
+
+    curl_easy_cleanup(easy_handle);
+    curl_global_cleanup();
+}
+
 TEST(ETCDv3, WatchValueChange)
 {
     static const char *pCACertFile = "/etc/kubernetes/ssl/ca.pem";
