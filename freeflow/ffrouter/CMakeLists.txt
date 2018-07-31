@@ -24,3 +24,4 @@ cc_binary(router
 target_link_libraries(router -L/usr/lib rdmacm ibverbs)
 
 cc_test(etcd_test SRCS etcd_test.cpp DEPS jsoncpp glog curl base64)
+cc_test(base64_test SRCS base64_test.cpp DEPS base64)
