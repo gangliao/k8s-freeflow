@@ -75,11 +75,13 @@ func main() {
 	cert = flag.String("cert", "", "Client's SSL Certificate")
 	key = flag.String("key", "", "Client's SSL Private Key")
 
-	endpoints := strings.Split(*flag.String("endpoints", os.Getenv("ETCD_ENDPOINTS"), "etcd endpoints"), ",")
+	epts := flag.String("endpoints", os.Getenv("ETCD_ENDPOINTS"), "etcd endpoints")
 	namespace := flag.String("namespace", "default", "name space to query")
 
-	fmt.Println("endpoints: ", endpoints)
 	flag.Parse()
+
+	endpoints := strings.Split(*epts, ",")
+	fmt.Println("endpoints: ", endpoints)
 
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
