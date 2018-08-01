@@ -8,4 +8,6 @@ COPY ca.pem /etc/kubernetes/ssl/
 COPY ip2etcd.sh /
 COPY ip2etcd.go /
 
+RUN cd / && go get .
+
 ENTRYPOINT [ "/ip2etcd.sh" ]
