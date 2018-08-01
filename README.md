@@ -9,7 +9,7 @@
 
 - [x] [ffouter docker image](https://github.com/gangliao/k8s-freeflow#build-freeflow-router-image)
 
-- [x] [client image](https://github.com/gangliao/k8s-freeflow#build-freeflow-client-image]
+- [x] [client docker image](https://github.com/gangliao/k8s-freeflow#build-freeflow-client-image)
 
 - [x] GoogleTest **PASS**: ETCD V3 API's watch mode for ffrouter [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/freeflow/ffrouter/etcd_test.cpp#L245-L297)
 
