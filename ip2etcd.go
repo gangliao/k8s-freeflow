@@ -35,6 +35,7 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -52,7 +53,8 @@ const (
 	requestTimeout       = 5 * time.Second
 	dialKeepAliveTime    = 10 * time.Second
 	dialKeepAliveTimeout = 3 * time.Second
-	keyDir               = "Microsoft/FreeFlow/"
+	ipMapKeyDir          = "Microsoft/FreeFlow/"
+	ipNodesKeyDir        = "Kubernetes/Nodes/"
 )
 
 func homeDir() string {
@@ -91,7 +93,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	updateIP(namespace, clientset, endpoints)
+	ip2Etcd(namespace, clientset, endpoints)
 }
 
 func etcdClient(endpoints []string) *clientv3.Client {
@@ -143,63 +145,125 @@ func etcdClient(endpoints []string) *clientv3.Client {
 	return clientetcd
 }
 
-func updateIP(namespace *string, clientset *kubernetes.Clientset, endpoints []string) {
+func ipMap2Etcd(clientetcd *clientv3.Client, pods *v1.PodList, ipPrecedeMap *map[string]string) {
+	// ipCurrentMap: whole IP map during the cur round
+	ipCurrentMap := make(map[string]string)
+	// ipChangedMap: changed IP map between the prev and cur round
+	ipChangedMap := make(map[string]string)
+
+	for _, pod := range pods.Items {
+		ipCurrentMap[pod.Status.PodIP] = pod.Status.HostIP
+		if precedeHostIP, ok := (*ipPrecedeMap)[pod.Status.PodIP]; ok {
+			if precedeHostIP == pod.Status.HostIP {
+				continue
+			}
+		}
+		ipChangedMap[pod.Status.PodIP] = pod.Status.HostIP
+	}
+
+	// Add changed IP into ETCD
+	for k, v := range ipChangedMap {
+		_, err := clientetcd.Put(context.Background(), ipMapKeyDir+k, v)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	// Delete expired IP from ETCD
+	// Memory Optimization on server side which on watch mode can capture this signal
+	// and delete the expired ip entries.
+	for k := range *ipPrecedeMap {
+		if _, ok := ipCurrentMap[k]; !ok {
+			_, err := clientetcd.Delete(context.Background(), ipMapKeyDir+k)
+			if err != nil {
+				panic(err.Error())
+			}
+		}
+	}
+
+	*ipPrecedeMap = ipCurrentMap
+}
+
+func ipNode2Etcd(clientetcd *clientv3.Client, nodes *v1.NodeList, ipPrecedeNodes *map[string]string) {
+	// ipCurrentNodes: whole IP Nodes during the cur round
+	ipCurrentNodes := make(map[string]string)
+	// ipChangedNodes: changed IP Nodes between the prev and cur round
+	ipChangedNodes := make(map[string]string)
+
+	var externIP string
+	var hostName string
+	for _, node := range nodes.Items {
+		for _, a := range node.Status.Addresses {
+			if a.Type == v1.NodeExternalIP {
+				externIP = a.Address
+			} else if a.Type == v1.NodeHostName {
+				hostName = a.Address
+			}
+		}
+		ipCurrentNodes[externIP] = hostName
+		if precedeHostName, ok := (*ipPrecedeNodes)[externIP]; ok {
+			if precedeHostName == hostName {
+				continue
+			}
+		}
+		ipChangedNodes[externIP] = hostName
+	}
+
+	// Add changed IP Nodes into ETCD
+	for k, v := range ipChangedNodes {
+		_, err := clientetcd.Put(context.Background(), ipNodesKeyDir+k, v)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	// Delete expired Node IP from ETCD
+	// Memory Optimization on server side which on watch mode can capture this signal
+	// and delete the expired ip entries.
+	for k := range *ipPrecedeNodes {
+		if _, ok := ipCurrentNodes[k]; !ok {
+			_, err := clientetcd.Delete(context.Background(), ipNodesKeyDir+k)
+			if err != nil {
+				panic(err.Error())
+			}
+		}
+	}
+
+	*ipPrecedeNodes = ipCurrentNodes
+}
+
+func ip2Etcd(namespace *string, clientset *kubernetes.Clientset, endpoints []string) {
 	clientetcd := etcdClient(endpoints)
 	defer clientetcd.Close()
 
 	// clean etcd ip map after restarting the program
-	_, err := clientetcd.Delete(context.Background(), keyDir, clientv3.WithPrefix())
+	_, err := clientetcd.Delete(context.Background(), ipMapKeyDir, clientv3.WithPrefix())
+	if err != nil {
+		panic(err.Error())
+	}
+	_, err = clientetcd.Delete(context.Background(), ipNodesKeyDir, clientv3.WithPrefix())
 	if err != nil {
 		panic(err.Error())
 	}
 
 	// ipPrecedeMap: whole IP map during the prev round
+	ipPrecedeNodes := make(map[string]string)
 	ipPrecedeMap := make(map[string]string)
-
 	for true {
 		// Fetch pod information
 		pods, err := clientset.CoreV1().Pods(*namespace).List(metav1.ListOptions{})
 		if err != nil {
 			panic(err.Error())
 		}
+		ipMap2Etcd(clientetcd, pods, &ipPrecedeMap)
 
-		// ipCurrentMap: whole IP map during the cur round
-		ipCurrentMap := make(map[string]string)
-		// ipChangedMap: changed IP map between the prev and cur round
-		ipChangedMap := make(map[string]string)
-
-		for _, pod := range pods.Items {
-			ipCurrentMap[pod.Status.PodIP] = pod.Status.HostIP
-			if precedeHostIP, ok := ipPrecedeMap[pod.Status.PodIP]; ok {
-				if precedeHostIP == pod.Status.HostIP {
-					continue
-				}
-			}
-			ipChangedMap[pod.Status.PodIP] = pod.Status.HostIP
+		// Fetch node information
+		nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+		if err != nil {
+			panic(err.Error())
 		}
+		ipNode2Etcd(clientetcd, nodes, &ipPrecedeNodes)
 
-		// Add changed IP into ETCD
-		for k, v := range ipChangedMap {
-			_, err := clientetcd.Put(context.Background(), keyDir+k, v)
-			if err != nil {
-				panic(err.Error())
-			}
-		}
-
-		// Delete expired IP from ETCD
-		// Memory Optimization on server side which on watch mode can capture this signal
-		// and delete the expired ip entries.
-		for k := range ipPrecedeMap {
-			if _, ok := ipCurrentMap[k]; !ok {
-				_, err := clientetcd.Delete(context.Background(), keyDir+k)
-				if err != nil {
-					panic(err.Error())
-				}
-			}
-		}
-
-		ipPrecedeMap = ipCurrentMap
 		time.Sleep(updateTime)
 	}
-
 }
