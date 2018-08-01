@@ -1,5 +1,10 @@
 # k8s-freeflow
 
+```bash
+git clone https://github.com/gangliao/k8s-freeflow
+git submodule update --init --recursive
+```
+
 ## TO-DO List
 
 - [x] IP Hunter: write changed nodes and map(vip, pip) into ETCD periodically [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/ip_hunter/ip2etcd.go)
