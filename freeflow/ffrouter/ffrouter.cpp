@@ -1488,7 +1488,7 @@ void HandleRequest(struct HandlerArgs *args)
                         continue;
                     }
 
-                    if (inet_aton(host, &si_other.sin_addr) == 0)
+                    if (inet_aton(host.c_str(), &si_other.sin_addr) == 0)
                     {
                         LOG_ERROR("Error in creating socket for UDP client other.");
                         continue;
