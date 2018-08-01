@@ -152,6 +152,9 @@ func ipMap2Etcd(clientetcd *clientv3.Client, pods *v1.PodList, ipPrecedeMap *map
 	ipChangedMap := make(map[string]string)
 
 	for _, pod := range pods.Items {
+		if len(pod.Status.PodIP) == 0 || len(pod.Status.HostIP) == 0 {
+			continue
+		}
 		ipCurrentMap[pod.Status.PodIP] = pod.Status.HostIP
 		if precedeHostIP, ok := (*ipPrecedeMap)[pod.Status.PodIP]; ok {
 			if precedeHostIP == pod.Status.HostIP {
@@ -200,6 +203,11 @@ func ipNode2Etcd(clientetcd *clientv3.Client, nodes *v1.NodeList, ipPrecedeNodes
 				hostName = a.Address
 			}
 		}
+
+		if len(externIP) == 0 {
+			continue
+		}
+
 		ipCurrentNodes[externIP] = hostName
 		if precedeHostName, ok := (*ipPrecedeNodes)[externIP]; ok {
 			if precedeHostName == hostName {
