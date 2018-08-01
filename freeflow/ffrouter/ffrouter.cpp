@@ -7,6 +7,7 @@
 #include <glog/logging.h>
 #include <ifaddrs.h>
 #include <json/json.h>
+#include <b64.h>
 
 #include "rdma_api.h"
 #include "verbs_cmd.h"
@@ -24,7 +25,7 @@ size_t process_watch_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 
     LOG(INFO) << "parsing json: " << json << std::endl;
 
-    EXPECT_TRUE(reader.parse(json, root));
+    CHECK_EQ(reader.parse(json, root), true);
 
     kv = root["result"]["events"];
 
@@ -39,7 +40,7 @@ size_t process_watch_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
             std::string decode_val = (char *)b64_decode(encode_val.c_str(), encode_val.length());
 
             LOG(INFO) << "Add or update: (" << decode_key << "\t, " << decode_val << ")";
-            HOST_LIST.append(decode_key);
+            HOST_LIST.insert(decode_key);
         }
         else
         {
@@ -340,7 +341,7 @@ void FreeFlowRouter::start()
 
     {
         // the nodes monitoring thread
-        pthread_t hosts_th = (pthread_t *)malloc(sizeof(pthread_t));
+        pthread_t* hosts_th = (pthread_t *)malloc(sizeof(pthread_t));
         pthread_create(hosts_th, NULL, (void *(*)(void *))update_host_list, NULL);
     }
 
@@ -1458,7 +1459,7 @@ void HandleRequest(struct HandlerArgs *args)
 
                 srand(client_sock);
 
-                for (int i = 0; i < HOST_LIST.size(); i++)
+                for (auto host : HOST_LIST)
                 {
                     if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
                     {
@@ -1487,7 +1488,7 @@ void HandleRequest(struct HandlerArgs *args)
                         continue;
                     }
 
-                    if (inet_aton(HOST_LIST[i], &si_other.sin_addr) == 0)
+                    if (inet_aton(host, &si_other.sin_addr) == 0)
                     {
                         LOG_ERROR("Error in creating socket for UDP client other.");
                         continue;
@@ -1495,16 +1496,16 @@ void HandleRequest(struct HandlerArgs *args)
 
                     if (sendto(s, req_body, sizeof(struct IBV_REG_MR_MAPPING_REQ), 0, (const sockaddr *)&si_other, slen) == -1)
                     {
-                        LOG_DEBUG("Error in sending MR mapping to " << HOST_LIST[i]);
+                        LOG_DEBUG("Error in sending MR mapping to " << host);
                     }
                     else
                     {
-                        LOG_TRACE("Sent MR mapping to " << HOST_LIST[i]);
+                        LOG_TRACE("Sent MR mapping to " << host);
                     }
 
                     if ((recv_buff_size = recvfrom(s, recv_buff, 1400, 0, (sockaddr *)&si_other, (socklen_t *)&slen)) == -1)
                     {
-                        LOG_ERROR("Error in receiving MR mapping ack" << HOST_LIST[i]);
+                        LOG_ERROR("Error in receiving MR mapping ack" << host);
                     }
                     else
                     {
@@ -1512,7 +1513,7 @@ void HandleRequest(struct HandlerArgs *args)
                         inet_ntop(AF_INET, &si_other.sin_addr, src_str, sizeof src_str);
 
                         int src_port = ntohs(si_other.sin_port);
-                        LOG_INFO("## ACK from " << HOST_LIST[i] << "/" << src_str << ":" << src_port << "ack-rkey=" << recv_buff
+                        LOG_INFO("## ACK from " << host << "/" << src_str << ":" << src_port << "ack-rkey=" << recv_buff
                                                 << " rkey= " << p->key);
                     }
 
@@ -3119,7 +3120,7 @@ void FreeFlowRouter::map_vip(void *addr)
 void *UDPServer(void *param)
 {
     struct sockaddr_in si_me, si_other;
-    int s, i, slen = sizeof(si_other);
+    int s, slen = sizeof(si_other);
     char buf[1400];
     struct IBV_REG_MR_MAPPING_REQ *p;
     p = (struct IBV_REG_MR_MAPPING_REQ *)buf;
@@ -3165,7 +3166,7 @@ void *UDPServer(void *param)
             sprintf(buf, "ack-%u", p->key);
             if (sendto(s, buf, 1400, 0, (const sockaddr *)&si_other, slen) == -1)
             {
-                LOG_ERROR("Error in sending MR mapping to " << HOST_LIST[i]);
+                LOG_ERROR("Error in sending MR mapping to host");
             }
         }
     }
