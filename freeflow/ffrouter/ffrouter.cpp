@@ -163,17 +163,13 @@ void mem_flush(const void *p, int allocation_size)
     asm volatile("sfence\n\t" : : : "memory");
 }
 
-void *FreeFlowRouter::updateHostList(void *arg)
+void FreeFlowRouter::updateHostList()
 {
     watch_etcd_kv(FLAGS_k8s_nodes_keydir, process_nodes, NULL);
     return NULL;
 }
 
-void *FreeFlowRouter::updateVipMap(void *arg)
-{
-    watch_etcd_kv(FLAGS_k8s_ipmap_keydir, process_vip_map, (void *)&vip_map);
-    return NULL;
-}
+void FreeFlowRouter::updateVipMap() { watch_etcd_kv(FLAGS_k8s_ipmap_keydir, process_vip_map, (void *)&vip_map); }
 
 FreeFlowRouter::~FreeFlowRouter()
 {
@@ -386,11 +382,21 @@ void FreeFlowRouter::start()
 
     // thread for minitoring IP nodes
     pthread_t hosts_th;
-    pthread_create(&hosts_th, NULL, updateHostList, NULL);
+    pthread_create(&hosts_th, NULL,
+                   [](void *ptr) {
+                       static_cast<FreeFlowRouter *>(ptr)->updateHostList();
+                       return (void *)nullptr;
+                   },
+                   this);
 
     // thread for minitoring IP map
     pthread_t ipmap_th;
-    pthread_create(&ipmap_th, NULL, updateVipMap, NULL);
+    pthread_create(&ipmap_th, NULL,
+                   [](void *ptr) {
+                       static_cast<FreeFlowRouter *>(ptr)->updateVipMap();
+                       return (void *)nullptr;
+                   },
+                   this);
 
     char c;
     // FILE *fp;
