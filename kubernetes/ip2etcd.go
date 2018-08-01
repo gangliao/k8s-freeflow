@@ -71,9 +71,9 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 
-	caCert = flag.String("cacert", "Server's TLS CA Certificate", "etcd cacert")
-	cert = flag.String("cert", "Client's SSL Certificate", "etcd cert")
-	key = flag.String("key", "Client's SSL Private Key", "etcd key")
+	caCert = flag.String("cacert", "/etc/kubernetes/ssl/ca.pem", "Server's TLS CA Certificate")
+	cert = flag.String("cert", "", "Client's SSL Certificate")
+	key = flag.String("key", "", "Client's SSL Private Key")
 
 	endpoints := strings.Split(*flag.String("endpoints", os.Getenv("ETCD_ENDPOINTS"), "etcd endpoints"), ",")
 	namespace := flag.String("namespace", "default", "name space to query")
