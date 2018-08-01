@@ -48,12 +48,12 @@ size_t process_vip_map(void *buffer, size_t size, size_t nmemb, void *user_p)
             std::string decode_val = (char *)b64_decode(encode_val.c_str(), encode_val.length());
 
             LOG(INFO) << "Add or update: (" << decode_key << "\t, " << decode_val << ")";
-            vip_map[decode_key] = decode_val;
+            (*vip_map)[decode_key] = decode_val;
         }
         else
         {
             LOG(INFO) << "Delete key: " << decode_key;
-            vip_map.erase(decode_key);
+            vip_map->erase(decode_key);
         }
     }
 
@@ -378,11 +378,11 @@ void FreeFlowRouter::start()
 
     // thread for minitoring IP nodes
     pthread_t hosts_th;
-    pthread_create(&hosts_th, NULL, (void *(*)(void *))update_host_list, NULL);
+    pthread_create(&hosts_th, NULL, (void *(*)(void *))updateHostList, NULL);
 
     // thread for minitoring IP map
     pthread_t ipmap_th;
-    pthread_create(&ipmap_th, NULL, (void *(*)(void *))update_vip_map, NULL);
+    pthread_create(&ipmap_th, NULL, (void *(*)(void *))updateVipMap, NULL);
 
     char c;
     // FILE *fp;
