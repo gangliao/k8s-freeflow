@@ -5,9 +5,9 @@ set -xe
 export http_proxy=http://10.130.14.129:8080
 export https_proxy=http://10.130.14.129:8080
 
-export GOBIN=$GOPATH/bin
+go get -d ./...
 
-go get .
+unset http_proxy https_proxy
 
 go run ./ip2etcd.go \
     -cacert="/go/cluster-data/ca.pem" \
