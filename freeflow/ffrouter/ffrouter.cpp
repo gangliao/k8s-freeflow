@@ -163,13 +163,13 @@ void mem_flush(const void *p, int allocation_size)
     asm volatile("sfence\n\t" : : : "memory");
 }
 
-void *FreeFlowRouter::updateHostList()
+void *FreeFlowRouter::updateHostList(void *arg)
 {
     watch_etcd_kv(FLAGS_k8s_nodes_keydir, process_nodes, NULL);
     return NULL;
 }
 
-void *FreeFlowRouter::updateVipMap()
+void *FreeFlowRouter::updateVipMap(void *arg)
 {
     watch_etcd_kv(FLAGS_k8s_ipmap_keydir, process_vip_map, (void *)&vip_map);
     return NULL;
