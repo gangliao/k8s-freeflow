@@ -146,6 +146,9 @@ class FreeFlowRouter
 
     ShmPiece* initCtrlShm(const char* tag);
 
+    void updateHostList();
+    void updateVipMap();
+
     uint32_t rdma_polling_interval;
     uint8_t disable_rdma;
 

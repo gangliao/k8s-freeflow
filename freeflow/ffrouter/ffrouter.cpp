@@ -20,7 +20,7 @@ DEFINE_string(k8s_ipmap_keydir, "Microsoft/FreeFlow", "Key-Value Directory of Ku
 
 static std::unordered_set<std::string> HOST_LIST;
 
-using ff_callback_t = const std::function <size_t(void *, size_t, size_t, void *)>;
+using ff_callback_t = const std::function<size_t(void *, size_t, size_t, void *)>;
 
 size_t process_vip_map(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
@@ -34,6 +34,8 @@ size_t process_vip_map(void *buffer, size_t size, size_t nmemb, void *user_p)
     CHECK_EQ(reader.parse(json, root), true);
 
     kv = root["result"]["events"];
+
+    auto vip_map = (std::map<std::string, std::string> *)user_p;
 
     if (!kv.empty())
     {
@@ -94,7 +96,7 @@ size_t process_nodes(void *buffer, size_t size, size_t nmemb, void *user_p)
     return size * nmemb;
 }
 
-void watch_etcd_kv(std::string key, ff_callback_t &process_watch)
+void watch_etcd_kv(std::string key, ff_callback_t &process_watch, void *user_p)
 {
     CURLcode return_code;
     return_code = curl_global_init(CURL_GLOBAL_SSL);
@@ -103,8 +105,6 @@ void watch_etcd_kv(std::string key, ff_callback_t &process_watch)
 
     CURL *curl_handle = curl_easy_init();
     CHECK_NOTNULL(curl_handle);
-
-    std::string buff_p;
 
     std::string watch_url = FLAGS_etcd_url + "/v3alpha/watch";
     curl_easy_setopt(curl_handle, CURLOPT_URL, watch_url.c_str());
@@ -136,7 +136,7 @@ void watch_etcd_kv(std::string key, ff_callback_t &process_watch)
     }
 
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, &process_watch);
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &buff_p);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, user_p);
 
     CURLcode res = curl_easy_perform(curl_handle);
     CHECK_EQ(res, CURLE_OK) << curl_easy_strerror(res);
@@ -146,10 +146,6 @@ void watch_etcd_kv(std::string key, ff_callback_t &process_watch)
     curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
 }
-
-void update_host_list() { watch_etcd_kv(FLAGS_k8s_nodes_keydir, process_nodes); }
-
-void update_vip_map() { watch_etcd_kv(FLAGS_k8s_ipmap_keydir, process_vip_map); }
 
 void mem_flush(const void *p, int allocation_size)
 {
@@ -166,6 +162,10 @@ void mem_flush(const void *p, int allocation_size)
 
     asm volatile("sfence\n\t" : : : "memory");
 }
+
+void FreeFlowRouter::updateHostList() { watch_etcd_kv(FLAGS_k8s_nodes_keydir, process_nodes, NULL); }
+
+void FreeFlowRouter::updateVipMap() { watch_etcd_kv(FLAGS_k8s_ipmap_keydir, process_vip_map, (void *)&vip_map); }
 
 FreeFlowRouter::~FreeFlowRouter()
 {
