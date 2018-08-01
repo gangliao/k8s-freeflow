@@ -3,11 +3,11 @@
 
 #include "ffrouter.h"
 
+#include <b64.h>
 #include <curl/curl.h>
 #include <glog/logging.h>
 #include <ifaddrs.h>
 #include <json/json.h>
-#include <b64.h>
 
 #include "rdma_api.h"
 #include "verbs_cmd.h"
@@ -15,6 +15,8 @@
 DEFINE_bool(etcd_enbale_tls, true, "Transport Layer Security for ETCD Communication.");
 DEFINE_string(etcd_cacert, "/etc/kubernetes/ssl/ca.pem", "Certificate Authority (CA) public keys (CA certs).");
 DEFINE_string(etcd_url, "https://10.142.104.73", "URL for ETCD's Key Value Storage.");
+
+static std::unordered_set<std::string> HOST_LIST;
 
 size_t process_watch_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
@@ -341,7 +343,7 @@ void FreeFlowRouter::start()
 
     {
         // the nodes monitoring thread
-        pthread_t* hosts_th = (pthread_t *)malloc(sizeof(pthread_t));
+        pthread_t *hosts_th = (pthread_t *)malloc(sizeof(pthread_t));
         pthread_create(hosts_th, NULL, (void *(*)(void *))update_host_list, NULL);
     }
 
@@ -1513,8 +1515,7 @@ void HandleRequest(struct HandlerArgs *args)
                         inet_ntop(AF_INET, &si_other.sin_addr, src_str, sizeof src_str);
 
                         int src_port = ntohs(si_other.sin_port);
-                        LOG_INFO("## ACK from " << host << "/" << src_str << ":" << src_port << "ack-rkey=" << recv_buff
-                                                << " rkey= " << p->key);
+                        LOG_INFO("## ACK from " << host << "/" << src_str << ":" << src_port << "ack-rkey=" << recv_buff << " rkey= " << p->key);
                     }
 
                     close(s);

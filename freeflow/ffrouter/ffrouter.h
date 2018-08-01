@@ -70,7 +70,6 @@ DECLARE_string(etcd_url);
 #define CONTROLLEN (RIGHTSLEN + CREDSLEN)
 
 void mem_flush(const void* p, int allocation_size);
-std::unordered_set<std::string> HOST_LIST;
 
 struct MR_SHM
 {
