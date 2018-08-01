@@ -378,11 +378,11 @@ void FreeFlowRouter::start()
 
     // thread for minitoring IP nodes
     pthread_t hosts_th;
-    pthread_create(&hosts_th, NULL, (void *(*)(void *))updateHostList, NULL);
+    pthread_create(&hosts_th, NULL, (void *(*)())updateHostList, NULL);
 
     // thread for minitoring IP map
     pthread_t ipmap_th;
-    pthread_create(&ipmap_th, NULL, (void *(*)(void *))updateVipMap, NULL);
+    pthread_create(&ipmap_th, NULL, (void *(*)())updateVipMap, NULL);
 
     char c;
     // FILE *fp;
