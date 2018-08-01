@@ -193,28 +193,28 @@ func ipNode2Etcd(clientetcd *clientv3.Client, nodes *v1.NodeList, ipPrecedeNodes
 	// ipChangedNodes: changed IP Nodes between the prev and cur round
 	ipChangedNodes := make(map[string]string)
 
-	var externIP string
+	var internIP string
 	var hostName string
 	for _, node := range nodes.Items {
 		for _, a := range node.Status.Addresses {
-			if a.Type == v1.NodeExternalIP {
-				externIP = a.Address
+			if a.Type == v1.NodeInternalIP {
+				internIP = a.Address
 			} else if a.Type == v1.NodeHostName {
 				hostName = a.Address
 			}
 		}
 
-		if len(externIP) == 0 {
+		if len(internIP) == 0 {
 			continue
 		}
 
-		ipCurrentNodes[externIP] = hostName
-		if precedeHostName, ok := (*ipPrecedeNodes)[externIP]; ok {
+		ipCurrentNodes[internIP] = hostName
+		if precedeHostName, ok := (*ipPrecedeNodes)[internIP]; ok {
 			if precedeHostName == hostName {
 				continue
 			}
 		}
-		ipChangedNodes[externIP] = hostName
+		ipChangedNodes[internIP] = hostName
 	}
 
 	// Add changed IP Nodes into ETCD
