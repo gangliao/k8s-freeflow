@@ -2,7 +2,7 @@
 
 ## TO-DO List
 
-- [x] IP Hunter: Write changed nodes and map(vip, pip) into ETCD periodically
+- [x] IP Hunter: write changed nodes and map(vip, pip) into ETCD periodically
 - [x] IP Hunter's Docker Image
 
 - [x] ffrouter update HOST_LIST and vip_map via RESTful API of ETCD's Watch mode periodically. The Watch API provides an event-based interface for asynchronously monitoring changes to keys. An etcd3 watch waits for changes to keys by continuously watching from a given revision, either current or historical, and streams key updates back to the client. https://coreos.com/etcd/docs/latest/learning/api.html
@@ -12,8 +12,12 @@
 
 - [x] new ffrouter depends on curl, base64 and jsoncpp.
 - [x] the process of compilation passed.
-- [ ] testing new ffouter with IP hunter and fix bug.
 
+
+- [ ] **testing new ffouter with IP hunter and fix bug.**
+- [ ] IP Hunter -> Kubernetes POD: ip_hunter_pod.yaml
+- [ ] ffrouter -> Kubernetes Daemonset: ffrouter_daemonset.yaml
+- [ ] Benchmark: baseline Kubeflow
 
 
 ## Environment
@@ -130,7 +134,7 @@ host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
 host$ docker exec -it gang_rdma_dev bash
 
 docker-root$ export http_proxy=http://10.130.14.129:8080
-docker-root$ /k8s_freeflow/install_driver.sh
+docker-root$ /k8s_freeflow/scripts/install_driver.sh
 
 
 # Commit rdma dev
@@ -161,7 +165,7 @@ host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
 
 host$ docker exec -it gang_rdma_dev bash
 
-docker-root$ /k8s_freeflow/build_client.sh
+docker-root$ /k8s_freeflow/scripts/build_client.sh
 
 host$ container_id=$(docker ps -a | grep gangliao/rdma_dev:$OS_ID$OS_VERSION | awk '{print $1}')
 host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-client" $container_id gangliao/freeflow-client:$OS_ID$OS_VERSION
@@ -181,7 +185,7 @@ host$ docker run --net=host --name gang_rdma_dev --privileged -d -it \
 
 host$ docker exec -it gang_rdma_dev bash
 
-docker-root$ /k8s_freeflow/build_router.sh
+docker-root$ /k8s_freeflow/scripts/build_router.sh
 
 host$ container_id=$(docker ps -a | grep gangliao/rdma_dev:$OS_ID$OS_VERSION | awk '{print $1}')
 host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-router" $container_id gangliao/freeflow-router:$OS_ID$OS_VERSION
