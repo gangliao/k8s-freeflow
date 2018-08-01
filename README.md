@@ -1,5 +1,21 @@
 # k8s-freeflow
 
+## TO-DO List
+
+- [x] IP Hunter: Write changed nodes and map(vip, pip) into ETCD periodically
+- [x] IP Hunter's Docker Image
+
+- [x] ffrouter update HOST_LIST and vip_map via RESTful API of ETCD's Watch mode periodically. The Watch API provides an event-based interface for asynchronously monitoring changes to keys. An etcd3 watch waits for changes to keys by continuously watching from a given revision, either current or historical, and streams key updates back to the client. https://coreos.com/etcd/docs/latest/learning/api.html
+- [x] GoogleTest: ETCD V3 API's watch mode for ffrouter
+- [x] GoogleTest: ETCD V3 API's range mode for ffrouter
+- [x] GoogleTest: ETCD V2 API's put mode for ffrouter
+
+- [x] new ffrouter depends on curl, base64 and jsoncpp.
+- [x] the process of compilation passed.
+- [ ] testing new ffouter with IP hunter and fix bug.
+
+
+
 ## Environment
 
 - Host OS: CentOS Linux release 7.4.1708 (Core)
