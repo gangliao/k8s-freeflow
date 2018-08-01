@@ -7,4 +7,4 @@ ADD ./*  /go/
 ENV GOBIN="$GOPATH/bin"
 RUN go get .
 
-ENTRYPOINT [ "./run_ip2etcd.sh" ]
+# ENTRYPOINT [ "./run_ip2etcd.sh" ]

@@ -82,10 +82,10 @@ func main() {
 
 	endpoints := strings.Split(*epts, ",")
 
-	fmt.Println("kubeconfig: ", kubeconfig)
+	fmt.Println("kubeconfig: ", *kubeconfig)
 	fmt.Println("endpoints: ", endpoints)
-	fmt.Println("namespace: ", namespace)
-	fmt.Println("CA certificate: ", caCert)
+	fmt.Println("namespace: ", *namespace)
+	fmt.Println("CA certificate: ", *caCert)
 
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
