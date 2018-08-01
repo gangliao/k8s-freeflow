@@ -2,17 +2,17 @@
 
 ## TO-DO List
 
-- [x] IP Hunter: write changed nodes and map(vip, pip) into ETCD periodically [CODE](ip_hunter/ip2etcd.sh)
-- [x] IP Hunter's Docker Image [CODE](ip_hunter/run.sh)
+- [x] IP Hunter: write changed nodes and map(vip, pip) into ETCD periodically [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/ip_hunter/ip2etcd.go)
+- [x] IP Hunter's Docker Image [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/ip_hunter/run.sh)
 
 - [x] **Have yet Test**ffrouter update HOST_LIST and vip_map via RESTful API of ETCD's Watch mode periodically**. [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/freeflow/ffrouter/ffrouter.cpp#L6-L168)
 
-- [x] GoogleTest: ETCD V3 API's watch mode for ffrouter [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/freeflow/ffrouter/etcd_test.cpp#L245-L297)
+- [x] GoogleTest **PASS**: ETCD V3 API's watch mode for ffrouter [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/freeflow/ffrouter/etcd_test.cpp#L245-L297)
 
     The Watch API provides an event-based interface for asynchronously monitoring changes to keys. An etcd3 watch waits for changes to keys by continuously watching from a given revision, either current or historical, and streams key updates back to the client. https://coreos.com/etcd/docs/latest/learning/api.html
 
-- [x] GoogleTest: ETCD V3 API's range mode for ffrouter
-- [x] GoogleTest: ETCD V2 API's put mode for ffrouter
+- [x] GoogleTest **PASS**: ETCD V3 API's range mode for ffrouter
+- [x] GoogleTest **PASS**: ETCD V2 API's put mode for ffrouter
 
 - [x] new ffrouter depends on curl, base64 and jsoncpp. [CODE](https://github.com/gangliao/k8s-freeflow/tree/master/freeflow/ffrouter/cmake)
 - [x] the process of compilation passed.
