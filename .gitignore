@@ -12,3 +12,5 @@
 *.out
 build/
 settings.json
+
+ca.pem
