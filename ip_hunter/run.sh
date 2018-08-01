@@ -2,7 +2,7 @@
 
 set -xe
 
-docker rm -f $(docker ps -a | awk '$2=="golang:1.10" {print $1}')
+docker rm -f $(docker ps -a | awk '$2=="golang:1.10" {print $1}') || true
 
 docker run --net=host --name gang_golang -it -d -v `pwd`:/go/ golang:1.10
 
