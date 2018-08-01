@@ -7,6 +7,7 @@ COPY ca.pem /etc/kubernetes/ssl/
 COPY ip2etcd.sh /go/
 COPY ip2etcd.go /go/
 
+ENV GOBIN="$GOPATH/bin"
 RUN go get .
 
 ENTRYPOINT [ "ip2etcd.sh" ]
