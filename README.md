@@ -5,7 +5,7 @@
 - [x] IP Hunter: write changed nodes and map(vip, pip) into ETCD periodically [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/ip_hunter/ip2etcd.go)
 - [x] IP Hunter's Docker Image [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/ip_hunter/run.sh)
 
-- [x] **Have yet Test**ffrouter update HOST_LIST and vip_map via RESTful API of ETCD's Watch mode periodically**. [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/freeflow/ffrouter/ffrouter.cpp#L6-L168)
+- [x] **Have yet Test** ffrouter update HOST_LIST and vip_map via RESTful API of ETCD's Watch mode periodically**. [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/freeflow/ffrouter/ffrouter.cpp#L6-L168)
 
 - [x] [ffouter docker image](https://github.com/gangliao/k8s-freeflow#build-freeflow-router-image)
 - [x] [applocation client docker image)[https://github.com/gangliao/k8s-freeflow#build-freeflow-client-image]
