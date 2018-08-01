@@ -7,6 +7,9 @@
 
 - [x] **Have yet Test**ffrouter update HOST_LIST and vip_map via RESTful API of ETCD's Watch mode periodically**. [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/freeflow/ffrouter/ffrouter.cpp#L6-L168)
 
+- [x] [ffouter docker image](https://github.com/gangliao/k8s-freeflow#build-freeflow-router-image)
+- [x] [applocation client docker image)[https://github.com/gangliao/k8s-freeflow#build-freeflow-client-image]
+
 - [x] GoogleTest **PASS**: ETCD V3 API's watch mode for ffrouter [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/freeflow/ffrouter/etcd_test.cpp#L245-L297)
 
     The Watch API provides an event-based interface for asynchronously monitoring changes to keys. An etcd3 watch waits for changes to keys by continuously watching from a given revision, either current or historical, and streams key updates back to the client. https://coreos.com/etcd/docs/latest/learning/api.html
@@ -15,7 +18,7 @@
 - [x] GoogleTest **PASS**: ETCD V2 API's put mode for ffrouter
 
 - [x] new ffrouter depends on curl, base64 and jsoncpp. [CODE](https://github.com/gangliao/k8s-freeflow/tree/master/freeflow/ffrouter/cmake)
-- [x] the process of compilation passed.
+- [x] the process of compilation passed. [CODE](https://github.com/gangliao/k8s-freeflow/blob/master/freeflow/ffrouter/CMakeLists.txt)
 
 - [ ] **testing new ffouter with IP hunter and fix bug.**
 - [ ] IP Hunter -> Kubernetes POD: ip_hunter_pod.yaml
