@@ -17,9 +17,9 @@
 #include <map>
 #include <sstream>
 #include <string>
-#include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 #include <arpa/inet.h>
 #include <byteswap.h>
@@ -50,6 +50,8 @@
 DECLARE_bool(etcd_enbale_tls);
 DECLARE_string(etcd_cacert);
 DECLARE_string(etcd_url);
+DECLARE_string(k8s_nodes_keydir);
+DECLARE_string(k8s_ipmap_keydir);
 
 #define UDP_PORT 11232
 #define HOST_NUM 4096

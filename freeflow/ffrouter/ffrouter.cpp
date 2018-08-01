@@ -15,10 +15,50 @@
 DEFINE_bool(etcd_enbale_tls, true, "Transport Layer Security for ETCD Communication.");
 DEFINE_string(etcd_cacert, "/etc/kubernetes/ssl/ca.pem", "Certificate Authority (CA) public keys (CA certs).");
 DEFINE_string(etcd_url, "https://10.142.104.73", "URL for ETCD's Key Value Storage.");
+DEFINE_string(k8s_nodes_keydir, "Kubernetes/Nodes", "Key-Value Directory of Kubernetes's Nodes in ETCD.");
+DEFINE_string(k8s_ipmap_keydir, "Microsoft/FreeFlow", "Key-Value Directory of Kubernetes's IP Map in ETCD.");
 
 static std::unordered_set<std::string> HOST_LIST;
 
-size_t process_watch_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
+using ff_callback_t = const std::function <size_t(void *, size_t, size_t, void *)>;
+
+size_t process_vip_map(void *buffer, size_t size, size_t nmemb, void *user_p)
+{
+    Json::Value root;
+    Json::Value kv;
+    Json::Reader reader;
+    std::string json = (char *)buffer;
+
+    LOG(INFO) << "parsing json: " << json << std::endl;
+
+    CHECK_EQ(reader.parse(json, root), true);
+
+    kv = root["result"]["events"];
+
+    if (!kv.empty())
+    {
+        std::string encode_key = kv[0]["kv"]["key"].asString();
+        std::string decode_key = (char *)b64_decode(encode_key.c_str(), encode_key.length());
+
+        if (kv[0]["type"].asString() != "DELETE")
+        {
+            std::string encode_val = kv[0]["kv"]["value"].asString();
+            std::string decode_val = (char *)b64_decode(encode_val.c_str(), encode_val.length());
+
+            LOG(INFO) << "Add or update: (" << decode_key << "\t, " << decode_val << ")";
+            vip_map[decode_key] = decode_val;
+        }
+        else
+        {
+            LOG(INFO) << "Delete key: " << decode_key;
+            vip_map.erase(decode_key);
+        }
+    }
+
+    return size * nmemb;
+}
+
+size_t process_nodes(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
     Json::Value root;
     Json::Value kv;
@@ -54,27 +94,26 @@ size_t process_watch_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
     return size * nmemb;
 }
 
-void update_host_list()
+void watch_etcd_kv(std::string key, ff_callback_t &process_watch)
 {
     CURLcode return_code;
     return_code = curl_global_init(CURL_GLOBAL_SSL);
 
     CHECK_EQ(CURLE_OK, return_code) << "init libcurl failed.";
 
-    CURL *easy_handle = curl_easy_init();
-    CHECK_NOTNULL(easy_handle);
+    CURL *curl_handle = curl_easy_init();
+    CHECK_NOTNULL(curl_handle);
 
     std::string buff_p;
 
     std::string watch_url = FLAGS_etcd_url + "/v3alpha/watch";
-    curl_easy_setopt(easy_handle, CURLOPT_URL, watch_url.c_str());
-    curl_easy_setopt(easy_handle, CURLOPT_PORT, 2379);
+    curl_easy_setopt(curl_handle, CURLOPT_URL, watch_url.c_str());
+    curl_easy_setopt(curl_handle, CURLOPT_PORT, 2379);
 
     struct curl_slist *headers = NULL;
     headers                    = curl_slist_append(headers, "Content-Type: application/json");
-    curl_easy_setopt(easy_handle, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, headers);
 
-    std::string key       = "Kubernetes/Nodes";
     char *encoded_key     = b64_encode((const unsigned char *)key.c_str(), key.length());
     char *encoded_end_key = b64_encode((const unsigned char *)key.c_str(), key.length());
 
@@ -85,28 +124,32 @@ void update_host_list()
 
     char post_fields[1024];
     sprintf(post_fields, "{\"create_request\": {\"key\": \"%s\", \"range_end\": \"%s\"}}", encoded_key, encoded_end_key);
-    curl_easy_setopt(easy_handle, CURLOPT_CUSTOMREQUEST, "POST");
-    curl_easy_setopt(easy_handle, CURLOPT_POSTFIELDS, post_fields);
+    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, post_fields);
 
     if (FLAGS_etcd_enbale_tls)
     {
         /* set the file with the certs vaildating the server */
-        curl_easy_setopt(easy_handle, CURLOPT_CAINFO, &FLAGS_etcd_cacert);
+        curl_easy_setopt(curl_handle, CURLOPT_CAINFO, &FLAGS_etcd_cacert);
         /* disconnect if we can't validate server's cert */
-        curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 1L);
     }
 
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_watch_v3);
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &buff_p);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, &process_watch);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &buff_p);
 
-    CURLcode res = curl_easy_perform(easy_handle);
+    CURLcode res = curl_easy_perform(curl_handle);
     CHECK_EQ(res, CURLE_OK) << curl_easy_strerror(res);
 
     free(encoded_key);
     free(encoded_end_key);
-    curl_easy_cleanup(easy_handle);
+    curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
 }
+
+void update_host_list() { watch_etcd_kv(FLAGS_k8s_nodes_keydir, process_nodes); }
+
+void update_vip_map() { watch_etcd_kv(FLAGS_k8s_ipmap_keydir, process_vip_map); }
 
 void mem_flush(const void *p, int allocation_size)
 {
@@ -316,14 +359,6 @@ FreeFlowRouter::FreeFlowRouter(const char *name)
         LOG_DEBUG("RDMA Dev: dev.name=" << this->rdma_data.ib_device->name << ", "
                                         << "dev.dev_name=" << this->rdma_data.ib_device->dev_name);
     }
-
-    this->vip_map["10.47.0.4"] = "192.168.2.13";
-    this->vip_map["10.47.0.6"] = "192.168.2.13";
-    this->vip_map["10.47.0.7"] = "192.168.2.13";
-    this->vip_map["10.47.0.8"] = "192.168.2.13";
-    this->vip_map["10.44.0.3"] = "192.168.2.15";
-    this->vip_map["10.44.0.4"] = "192.168.2.15";
-    this->vip_map["10.44.0.6"] = "192.168.2.15";
 }
 
 void FreeFlowRouter::start()
@@ -341,11 +376,13 @@ void FreeFlowRouter::start()
         sleep(1.0);
     }
 
-    {
-        // the nodes monitoring thread
-        pthread_t *hosts_th = (pthread_t *)malloc(sizeof(pthread_t));
-        pthread_create(hosts_th, NULL, (void *(*)(void *))update_host_list, NULL);
-    }
+    // thread for minitoring IP nodes
+    pthread_t hosts_th;
+    pthread_create(&hosts_th, NULL, (void *(*)(void *))update_host_list, NULL);
+
+    // thread for minitoring IP map
+    pthread_t ipmap_th;
+    pthread_create(&ipmap_th, NULL, (void *(*)(void *))update_vip_map, NULL);
 
     char c;
     // FILE *fp;
