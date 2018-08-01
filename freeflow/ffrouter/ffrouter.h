@@ -18,6 +18,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <arpa/inet.h>
 #include <byteswap.h>
@@ -68,7 +70,7 @@ DECLARE_string(etcd_url);
 #define CONTROLLEN (RIGHTSLEN + CREDSLEN)
 
 void mem_flush(const void* p, int allocation_size);
-const char HOST_LIST[HOST_NUM][16] = {"192.168.2.13", "192.168.2.15"};
+std::unordered_set<std::string> HOST_LIST;
 
 struct MR_SHM
 {

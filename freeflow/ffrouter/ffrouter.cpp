@@ -13,29 +13,40 @@
 
 DEFINE_bool(etcd_enbale_tls, true, "Transport Layer Security for ETCD Communication.");
 DEFINE_string(etcd_cacert, "/etc/kubernetes/ssl/ca.pem", "Certificate Authority (CA) public keys (CA certs).");
-DEFINE_string(etcd_url, "https://10.142.104.73/v2/keys/", "URL for ETCD's Key Value Storage.");
+DEFINE_string(etcd_url, "https://10.142.104.73", "URL for ETCD's Key Value Storage.");
 
-size_t process_data(void *buffer, size_t size, size_t nmemb, void *user_p)
+size_t process_watch_v3(void *buffer, size_t size, size_t nmemb, void *user_p)
 {
     Json::Value root;
-    Json::Value node;
+    Json::Value kv;
     Json::Reader reader;
-    Json::FastWriter writer;
     std::string json = (char *)buffer;
 
-    if (!reader.parse(json, root))
-    {
-        std::cout << "parse json error" << std::endl;
-        return 0;
-    }
-    std::string nodeString = writer.write(root["node"]);
-    if (!reader.parse(nodeString, node))
-    {
-        std::cout << "parse json error" << std::endl;
-        return 0;
-    }
+    LOG(INFO) << "parsing json: " << json << std::endl;
 
-    *(std::string *)user_p = writer.write(node["value"]);
+    EXPECT_TRUE(reader.parse(json, root));
+
+    kv = root["result"]["events"];
+
+    if (!kv.empty())
+    {
+        std::string encode_key = kv[0]["kv"]["key"].asString();
+        std::string decode_key = (char *)b64_decode(encode_key.c_str(), encode_key.length());
+
+        if (kv[0]["type"].asString() != "DELETE")
+        {
+            std::string encode_val = kv[0]["kv"]["value"].asString();
+            std::string decode_val = (char *)b64_decode(encode_val.c_str(), encode_val.length());
+
+            LOG(INFO) << "Add or update: (" << decode_key << "\t, " << decode_val << ")";
+            HOST_LIST.append(decode_key);
+        }
+        else
+        {
+            LOG(INFO) << "Delete key: " << decode_key;
+            HOST_LIST.erase(decode_key);
+        }
+    }
 
     return size * nmemb;
 }
@@ -52,9 +63,27 @@ void update_host_list()
 
     std::string buff_p;
 
-    std::string key = FLAGS_etcd_url + "Microsoft";
-    curl_easy_setopt(easy_handle, CURLOPT_URL, key.c_str());
+    std::string watch_url = FLAGS_etcd_url + "/v3alpha/watch";
+    curl_easy_setopt(easy_handle, CURLOPT_URL, watch_url.c_str());
     curl_easy_setopt(easy_handle, CURLOPT_PORT, 2379);
+
+    struct curl_slist *headers = NULL;
+    headers                    = curl_slist_append(headers, "Content-Type: application/json");
+    curl_easy_setopt(easy_handle, CURLOPT_HTTPHEADER, headers);
+
+    std::string key       = "Kubernetes/Nodes";
+    char *encoded_key     = b64_encode((const unsigned char *)key.c_str(), key.length());
+    char *encoded_end_key = b64_encode((const unsigned char *)key.c_str(), key.length());
+
+    // If range_end is key plus one (e.g., "aa"+1 == "ab", "a\xff"+1 == "b"), then the
+    // range represents all keys prefixed with key.
+    size_t n               = strlen(encoded_end_key);
+    encoded_end_key[n - 1] = encoded_key[n - 1] + 1;
+
+    char post_fields[1024];
+    sprintf(post_fields, "{\"create_request\": {\"key\": \"%s\", \"range_end\": \"%s\"}}", encoded_key, encoded_end_key);
+    curl_easy_setopt(easy_handle, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_easy_setopt(easy_handle, CURLOPT_POSTFIELDS, post_fields);
 
     if (FLAGS_etcd_enbale_tls)
     {
@@ -64,18 +93,14 @@ void update_host_list()
         curl_easy_setopt(easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
     }
 
-    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_data);
+    curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &process_watch_v3);
     curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &buff_p);
 
     CURLcode res = curl_easy_perform(easy_handle);
-    /* Check for errors */
-    if (res != CURLE_OK)
-    {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    }
+    CHECK_EQ(res, CURLE_OK) << curl_easy_strerror(res);
 
-    std::cout << buff_p << std::endl;
-
+    free(encoded_key);
+    free(encoded_end_key);
     curl_easy_cleanup(easy_handle);
     curl_global_cleanup();
 }
@@ -311,6 +336,12 @@ void FreeFlowRouter::start()
         ctrl_args.ffr = this;
         pthread_create(&ctrl_th, NULL, (void *(*)(void *))CtrlChannelLoop, &ctrl_args);
         sleep(1.0);
+    }
+
+    {
+        // the nodes monitoring thread
+        pthread_t hosts_th = (pthread_t *)malloc(sizeof(pthread_t));
+        pthread_create(hosts_th, NULL, (void *(*)(void *))update_host_list, NULL);
     }
 
     char c;
@@ -1427,7 +1458,7 @@ void HandleRequest(struct HandlerArgs *args)
 
                 srand(client_sock);
 
-                for (int i = 0; i < HOST_NUM; i++)
+                for (int i = 0; i < HOST_LIST.size(); i++)
                 {
                     if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
                     {
