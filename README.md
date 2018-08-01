@@ -6,6 +6,13 @@
 - Host Kernel: 3.10.0-693.el7.x86_64
 - Host MLNX_OFED_LINUX: MLNX_OFED_LINUX-4.2-1.0.0.0 
 
+## Run IP Hunter
+
+```bash
+cd ip_hunter && ./run.sh
+```
+
+
 ## Build Dev Image
 
 To build docker image `rdma_dev`, please issue the following command:
@@ -165,10 +172,3 @@ host$ docker commit -a "Gang Liao <gangliao@cs.umd.edu>" -m "build freeflow-rout
 # host$ docker push
 ```
 
-
-
-## router-ip-checker
-
-```bash
-go run etcd.go -cacert=/etc/kubernetes/ssl/ca.pem -cert=/etc/etcd/ssl/etcd.pem -key=/etc/etcd/ssl/etcd-key.pem
-```
