@@ -2,7 +2,7 @@ FROM golang:1.10
 
 MAINTAINER Gang Liao <gangliao@cs.umd.edu>
 
-ADD ./*  $HOME/
+ADD ./*  /go/
 
 ENV GOBIN="$GOPATH/bin"
 RUN go get .
